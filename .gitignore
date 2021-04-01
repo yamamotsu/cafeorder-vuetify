@@ -13,6 +13,12 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# firebase local emulator data
+.firebase/local
+firestore-debug.log
+ui-debug.log
+firebase-config.js
+
 # Editor directories and files
 .idea
 .vscode
