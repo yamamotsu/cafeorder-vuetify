@@ -181,10 +181,10 @@ import HistoryManagerApi from "@/api/HistoryManager"
 import ItemCard from "./ItemCard"
 import AdminAuth from "@/api/AdminAuth"
 import UploaderApi from "../api/Uploader"
-import Header from "./Header"
-import Modal from "./Modal"
+import Header from "../components/Header"
+import Modal from "../components/Modal"
 import CartWindow from "./CartWindow"
-import Icon from"./Icon"
+import Icon from"../components/Icon"
 
 export default {
   name: "ItemSelectPage",

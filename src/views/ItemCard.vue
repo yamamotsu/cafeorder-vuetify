@@ -89,8 +89,8 @@
 
 <script>
 import Vue from "vue"
-import Card from "./Card"
-import Icon from "./Icon"
+import Card from "../components/Card"
+import Icon from "../components/Icon"
 
 import ItemManager from "@/api/ItemManager"
 import UploaderApi from "../api/Uploader"

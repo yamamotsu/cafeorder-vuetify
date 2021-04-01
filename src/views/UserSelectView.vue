@@ -1,55 +1,42 @@
 <template>
   <div class="user-select-page">
-    <header>
-      <users-header class="header">
-        <template v-slot:rightside>
-          <div class="header-toolbar">
-            <div class="header-toolbar-button button-history">
-              <icon
-                class="header-toolbar-button-icon"
-                @click="showMonthlyPurchasedItems()"
-                :iconSize="30"
-                :padding="2"
-                :borderRadius="4"
-                >
-                history
-              </icon>
-            </div>
-          </div>
-        </template>
-      </users-header>
-      <div class="header-infobar"
-        v-if="isShowInfo"
-        @click="onInfoBarClicked()">
-        <div class="header-infobar-icon-content">
-          <toolbar-icon
-            class="header-infobar-icon"
-            :iconSize="40"
-            :padding="4"
-            :borderRadius="4"
-            >
-            announcement
-          </toolbar-icon>
-        </div>
-        <div class="header-infobar-messagebox">
-          <p class="header-infobar-message">
-            {{infoData.title}}
-          </p>
-        </div>
-      </div>
-    </header>
+    <v-app-bar color="primary">
+      <v-spacer/>
+      <v-toolbar-title>LIMU</v-toolbar-title>
+      <v-spacer/>
+      <v-btn icon>
+        <v-icon midium
+          color="secondary"
+          @click="isEditable = !isEditable">mdi-pencil</v-icon>
+      </v-btn>
+      <v-btn icon>
+        <v-icon midium
+          color="secondary"
+          @click="showMonthlyPurchasedItems()">mdi-history</v-icon>
+      </v-btn>
+    </v-app-bar>
     <div class="main-content">
-      <div class="mdl-grid">
-        <user-card
-          v-for="user in users"
-          :key="user.id"
-          :user="user"
-          :isEditable="isEditable"
-          @onUserDataChanged="(user) => overwriteUser(user)"
-          @remove="(user) => removeUser(user)"
-          @onClicked="(user) => goItemSelectPage(user)"
-        ></user-card>
-      </div>
+      <v-container class="mdl-grid">
+        <v-row>
+          <v-col
+            cols="12"
+            sm="6"
+            md="3"
+            lg="2"
+            class="pa-2"
+            v-for="user in enableUsers"
+            :key="user.id"
+            >
+            <user-card
+              :user="user"
+              :isEditable="isEditable"
+              @onUserDataChanged="(user) => overwriteUser(user)"
+              @remove="(user) => removeUser(user)"
+              @onClicked="(user) => goItemSelectPage(user)"
+            />
+          </v-col>
+        </v-row>
+      </v-container>
 
       <!-- Colored FAB button with ripple -->
       <button
@@ -106,11 +93,11 @@ import Vue from "vue"
 import UserCard from "./UserCard"
 import UserManagerApi from "@/api/UserManager"
 import AdminAuth from "@/api/AdminAuth"
-import Header from "./Header"
-import Modal from "./Modal"
-import Icon from "./Icon"
+import Header from "../components/Header"
+import Modal from "../components/Modal"
+import Icon from "../components/Icon"
 import firebase from "../firebase"
-import PurchasedItemsModal from "./PurchasedItems/PurchasedItemsModal"
+import PurchasedItemsModal from "./PurchasedItemsModal"
 
 export default {
   name: "UserSelectPage",
@@ -150,6 +137,7 @@ export default {
       UserManagerApi.UserManager.getAllUsers().then(
         (users) => {
           this.users = users
+          console.log('all users:', this.users)
         }
       )
     },
@@ -157,7 +145,7 @@ export default {
       const firestore = firebase.firestore()
       firestore.collection("system").doc("news").get().then(snapshot => {
         this.infoData = snapshot.data()
-        if (!"enable" in this.infoData) {return}
+        if (!("enable" in this.infoData)) {return}
         if (this.infoData["enable"] == false) {return}
 
         const infoDate = this.infoData.timestamp.toDate()
@@ -217,6 +205,20 @@ export default {
     },
     showMonthlyPurchasedItems(){
       this.showItemsHistory=true
+    }
+  },
+  computed: {
+    enableUsers() {
+      if(this.isEditable) {
+        return this.users
+      }
+      const users = this.users
+      return Object.keys(users)
+                  .filter((id) => users[id].enable)
+                  .reduce((result, id) => {
+                    result[id] = users[id]
+                    return result
+                  }, {})
     }
   }
 }
@@ -344,7 +346,7 @@ Vue.component("items-history", PurchasedItemsModal)
       display: flex
       flex-direction: row-reverse
       &-content
-        display:flex
+        display: flex
         flex-direction: row
         border-radius: 14px
         border: none

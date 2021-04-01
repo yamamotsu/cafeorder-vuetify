@@ -50,11 +50,11 @@
 
 <script>
 import Vue from "vue"
-import Icon from "./Icon"
-import Modal from "./Modal"
+import Icon from "../components/Icon"
+import Modal from "../components/Modal"
 import HistoryManagerApi from "../api/HistoryManager"
 import Util from "../api/Util"
-import HistoryModalRow from "./HistoryModalRow"
+import HistoryModalRow from "../components/HistoryModalRow"
 import Color from "../api/Colors"
 import ItemManager from "@/api/ItemManager"
 

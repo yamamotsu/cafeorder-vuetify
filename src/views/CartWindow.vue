@@ -85,8 +85,8 @@
 
 <script>
 import Vue from "vue"
-import Icon from "./Icon"
-import CartRow from "./CartRow"
+import Icon from "../components/Icon"
+import CartRow from "../components/CartRow"
 
 export default {
   name: "CartWindow",

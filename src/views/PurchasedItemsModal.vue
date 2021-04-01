@@ -65,12 +65,12 @@
 
 <script>
 import Vue from "vue"
-import Icon from "../Icon"
-import Modal from "../Modal"
-import HistoryManagerApi from "../../api/HistoryManager"
-import ItemManager from "../../api/ItemManager"
-import Util from "../../api/Util"
-import ListRow from "./PurchasedItemsModalRow"
+import Icon from "../components/Icon"
+import Modal from "../components/Modal"
+import HistoryManagerApi from "../api/HistoryManager"
+import ItemManager from "../api/ItemManager"
+import Util from "../api/Util"
+import ListRow from "../components/PurchasedItems/PurchasedItemsModalRow"
 
 export default {
   data: function() {

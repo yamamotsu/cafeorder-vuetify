@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import UserSelectPage from '@/components/UserSelectPage'
-import ItemSelectPage from '@/components/ItemSelectPage'
+import UserSelectView from '../views/UserSelectView'
+import ItemSelectPage from '../views/ItemSelectPage'
 
 Vue.use(Router)
 
@@ -13,8 +13,8 @@ export default new Router({
     },
     {
       path: '/users',
-      name: 'UserSelectPage',
-      component: UserSelectPage,
+      name: 'UserSelectView',
+      component: UserSelectView,
     },
     {
       path: '/items',
@@ -23,8 +23,8 @@ export default new Router({
     },
     {
       path: '/users/admin',
-      name: 'UserSelectPage',
-      component: UserSelectPage,
+      name: 'UserSelectView',
+      component: UserSelectView,
       props: {isEditable: true}
     }
   ]
