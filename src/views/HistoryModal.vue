@@ -1,61 +1,47 @@
 <template>
-  <modal class="modal" @close="$emit('close')">
-    <div class="modal-content">
-      <div class="header" :style="{backgroundColor:headerColor}">
-        <div class="header-title header-row">
-          <h3>Purchases of {{user.name}}</h3>
-        </div>
-        <div class="header-date header-row">
-          <div class="header-date-year">
-            <p>{{year}}</p>
-          </div>
-          <div class="header-date-month">
-            <div class="header-date-arrow">
-              <icon
-              :iconSize="32"
-              :padding="0"
-              :borderRadius="0"
-              @click="onLeftArrowClicked()"
-              >
-              keyboard_arrow_left
-              </icon>
-            </div>
-            <div class="header-date-month-view">
-              <p>{{month | monthStr}}</p>
-            </div>
-            <div class="header-date-arrow">
-              <icon
-              :iconSize="32"
-              :padding="0"
-              :borderRadius="0"
-              @click="onRightArrowClicked()"
-              >
-              keyboard_arrow_right
-              </icon>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="main">
-        <record-row class="record-row"
-          v-for="record in history"
-          :key = "record.id"
-          :record = "record"
-          >
-        </record-row>
-      </div>
-    </div>
-  </modal>
+  <v-bottom-sheet inset :value="value" @input="v => $emit('input', v)">
+    <v-card>
+    <v-toolbar flat max-height="80vh">
+      <v-toolbar-title class="primary--text">{{user.name}}'s history</v-toolbar-title>
+      <v-spacer/>
+      <v-btn icon @click="onLeftArrowClicked()">
+        <v-icon>mdi-chevron-left</v-icon>
+      </v-btn>
+      {{ year }} {{ month | monthStr }}
+      <v-btn icon @click="onRightArrowClicked()" :disabled="year == now.getFullYear() && month-1 == now.getMonth()">
+        <v-icon>mdi-chevron-right</v-icon>
+      </v-btn>
+
+    </v-toolbar>
+    <v-simple-table fixed-header height="80vh">
+      <thead>
+        <tr>
+          <th class="text-center">Date</th>
+          <th class="text-center">Time</th>
+          <th class="text-center">Name</th>
+          <!-- <th class="text-center">Value</th> -->
+          <th class="text-center">Quantity</th>
+          <th class="text-center">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="record in history" :key="record.id">
+          <td>{{ record.timestamp.getDate() }}</td>
+          <td>{{ record.timestamp | date2time }}</td>
+          <td>{{ record | recordName }}</td>
+          <!-- <td>{{ record.amount }}</td> -->
+          <td>{{ record.quantity }}</td>
+          <td>{{ record.subtotal }}</td>
+        </tr>
+      </tbody>
+    </v-simple-table>
+    </v-card>
+  </v-bottom-sheet>
 </template>
 
 <script>
-import Vue from "vue"
-import Icon from "../components/Icon"
-import Modal from "../components/Modal"
 import HistoryManagerApi from "../api/HistoryManager"
 import Util from "../api/Util"
-import HistoryModalRow from "../components/HistoryModalRow"
-import Color from "../api/Colors"
 import ItemManager from "@/api/ItemManager"
 
 export default {
@@ -64,11 +50,12 @@ export default {
       "year": 0,
       "month": 1,
       "date": this.getThisMonth(),
+      "now": this.getThisMonth(),
       "history": [],
-      "items": {}
+      "items": {},
     }
   },
-  props: ['user'],
+  props: ['user', 'value'],
   mounted: function () {
     this.updateYearMonth()
     this.userHistory()
@@ -112,7 +99,10 @@ export default {
       this.month = this.date.getMonth() + 1
     },
     updateItemHistory(history){
-      if(!history) return []
+      if(!history){
+        this.history = []
+        return
+      }
       let itemHistory = []
       let items = this.items
       history.forEach(record => {
@@ -128,7 +118,7 @@ export default {
             }
 
             itemHistory.push({
-              "timestamp": record.timestamp,
+              "timestamp": record.timestamp.toDate(),
               "type": record.type,
               "name": item.name,
               "quantity": item.quantity,
@@ -138,7 +128,7 @@ export default {
         }else if(record.type === "set" || record.type === "reset"){
           console.log("set/reset type", record)
           itemHistory.push({
-            "timestamp": record.timestamp,
+            "timestamp": record.timestamp.toDate(),
             "type": record.type,
             "name": "",
             "quantity": 0,
@@ -157,17 +147,27 @@ export default {
     monthStr (month) {
       return Util.Utils.formatMonth2Str(month)
     },
+    date2time (date) {
+      const hours = date.getHours()
+      const hoursStr = ("00" + hours).slice(-2)
+      const minutes = date.getMinutes()
+      const minutesStr = ("00" + minutes).slice(-2)
+      return hoursStr + ":" + minutesStr
+    },
+    recordName (record){
+      if(record.type === "purchase"){
+        return record.name
+      }
+      if(record.subtotal < 0){
+        return "<< 送金 >>"
+      }
+      return "<< チャージ >>"
+    }
   },
   computed: {
-    headerColor () {
-      return Color.colortable[this.user.color]
-    }
   }
 }
 
-Vue.component("icon", Icon)
-Vue.component("modal", Modal)
-Vue.component("record-row", HistoryModalRow)
 </script>
 
 <style lang="sass" scoped>
