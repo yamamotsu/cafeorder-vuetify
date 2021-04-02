@@ -1,5 +1,56 @@
 <template>
-  <div class="cart">
+  <v-card class="cart" elevation="2">
+    <v-toolbar color="accent" dense flat>
+      <v-toolbar-items>
+        <v-btn icon @click="closeCart()">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-toolbar-items>
+      <v-toolbar-title> Total {{ cartTotalValue | amountDisplay }} </v-toolbar-title>
+      <v-spacer/>
+      <v-toolbar-items>
+        <v-btn @click="onCheckoutClicked()" text>
+          <v-icon left>mdi-cart</v-icon>
+          checkout
+        </v-btn>
+        <v-btn icon @click="isCartOpen = !isCartOpen">
+          <v-icon v-show="!isCartOpen">mdi-chevron-up</v-icon>
+          <v-icon v-show="isCartOpen">mdi-chevron-down</v-icon>
+        </v-btn>
+      </v-toolbar-items>
+    </v-toolbar>
+    <v-expand-transition>
+      <div v-show="isCartOpen">
+        <v-simple-table dense>
+          <thead>
+            <tr>
+              <th class="text-center">Name</th>
+              <th class="text-center">Value</th>
+              <th class="text-center">Quantity</th>
+              <th class="text-center">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in cart.items" :key="row.id">
+              <td>{{ row.item.name }}</td>
+              <td>{{ row.item.amount | amountDisplay }}</td>
+              <td>
+                <v-btn icon @click="reduceQuantity(row.item.id)">
+                  <v-icon>mdi-chevron-left</v-icon>
+                </v-btn>
+                {{ row.quantity }}
+                <v-btn icon @click="addQuantity(row.item.id)">
+                  <v-icon>mdi-chevron-right</v-icon>
+                </v-btn>
+              </td>
+              <td>{{ row.item.amount * row.quantity | amountDisplay }}</td>
+            </tr>
+          </tbody>
+        </v-simple-table>
+      </div>
+    </v-expand-transition>
+  </v-card>
+  <!-- <div class="cart">
     <div class="cart-header"
       @click="isCartOpen = !isCartOpen">
       <div class="cart-header-icon">
@@ -80,7 +131,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 </template>
 
 <script>

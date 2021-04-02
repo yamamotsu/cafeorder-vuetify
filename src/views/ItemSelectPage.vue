@@ -170,6 +170,7 @@ import AdminAuth from "@/api/AdminAuth"
 import UploaderApi from "../api/Uploader"
 import Modal from "../components/Modal"
 import CartWindow from "./CartWindow"
+import ItemCard from "./ItemCard"
 
 export default {
   name: "ItemSelectPage",
@@ -289,7 +290,7 @@ export default {
         if(!this.user){
           alert("sorry, this user has been deleted.")
           this.$router.push({
-            name:"UserSelectPage"
+            name:"UserSelectView"
           })
         }
         this.user.balance -= totalValue
@@ -365,7 +366,7 @@ export default {
         behavior: "smooth"
       })
       this.$router.push({
-        name:"UserSelectPage"
+        name:"UserSelectView"
       })
     },
     updateItems: function(items) {
@@ -382,6 +383,7 @@ export default {
 
 Vue.component("modal", Modal)
 Vue.component("cart", CartWindow)
+Vue.component("item-card", ItemCard)
 </script>
 
 <style lang="sass" scoped>
@@ -472,8 +474,8 @@ Vue.component("cart", CartWindow)
   z-index: 10
   position: fixed
   left: 20px
-  bottom: 16px
-  width: 70vw
+  bottom: 20px
+  width: 60vw
 
   box-shadow: #2c3e50 0 1px 3.4px
 
