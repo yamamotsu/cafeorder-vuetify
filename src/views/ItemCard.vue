@@ -1,35 +1,52 @@
 <template>
-  <v-card @click="onClick" :ripple="!isAdmin">
+  <v-card @click="onClick" :ripple="!isEditable && !isPrefab">
     <v-card-actions
       class="pa-0"
       :class="{secondary:item.enable, 'grey lighten-2':!item.enable}"
-      v-if="isAdmin">
+      v-if="isEditable">
+      <v-btn icon
+        color="primary" class="ml-1"
+        @click="isEditMode=!isEditMode">
+        <v-icon>mdi-pencil</v-icon>
+      </v-btn>
       <v-spacer></v-spacer>
       <v-switch
         inset dense
         hide-details="true"
         class="mr-0 mt-0"
+        @change="state => $emit('switched', state)"
         v-model="item.enable"/>
     </v-card-actions>
 
-    <v-img height="200" :src="item.imageUrl">
-      <!-- 非表示のfileインプット -->
-      <input type="file" style="display:none" ref="input" accept="image/jpeg, image/jpg, image/png" @change="e => thumbnailImage = e.target.files[0]">
-
-      <div @click="selectImageFile()" v-show="isEdit">
-        <v-overlay absolute :value="isEdit">
+    <v-img height="200" :src="isEditMode ? newItem.imageUrl : item.imageUrl">
+      <div @click="selectImageFile()" v-show="isEditMode">
+        <v-overlay absolute :value="isEditMode">
           <v-icon x-large>mdi-camera</v-icon>
         </v-overlay>
       </div>
     </v-img>
 
-    <div v-if="!isEdit">
-      <v-card-title>{{ item.name }}</v-card-title>
-      <v-card-subtitle>{{ item.amount }}</v-card-subtitle>
+    <div v-if="!isEditMode">
+      <v-card-title class="grey--text text-h5 px-3 pt-3 pb-0">{{ item.name }}</v-card-title>
+      <!-- <v-card-subtitle>a</v-card-subtitle> -->
+      <v-card-text class="primary--text text-h5 px-3 pb-3">
+        <div class="amount-display">
+          <p class="primary--text text-h5">¥</p>
+          <h3 class="primary--text text-h4 ma-0 ml-1">{{ item.amount }}</h3>
+        </div>
+      </v-card-text>
     </div>
 
     <!-- edit form -->
-    <div v-else class="px-2 pt-2">
+    <v-form ref="form" v-else class="px-2 pt-2">
+      <!-- 非表示のfileインプット -->
+      <input
+        type="file"
+        style="display:none"
+        ref="input"
+        accept="image/jpeg, image/jpg, image/png"
+        @change="e => onSelectImage(e)"/>
+
       <v-text-field
         dense
         filled
@@ -57,18 +74,7 @@
           </v-btn>
         </v-toolbar-items>
       </v-toolbar>
-    </div>
-
-    <div v-if="isAdmin">
-      <v-divider class="my-0 mx-2"/>
-      <v-card-actions>
-        <v-spacer/>
-        <v-btn icon
-          @click="isEdit=!isEdit">
-          <v-icon>mdi-pencil</v-icon>
-        </v-btn>
-      </v-card-actions>
-    </div>
+    </v-form>
   </v-card>
 </template>
 
@@ -80,7 +86,7 @@ export default {
   name: "ItemCard",
   data: function() {
     return {
-      isEdit:false,
+      isEditMode:false,
       thumbnailImage: null,
       newItem: {
         name: "",
@@ -89,19 +95,29 @@ export default {
       },
       nameRules: [
         value => !!value || 'Required'
-      ]
+      ],
     }
   },
-  props: ["item", "user", "isAdmin"],
+  props: ["item", "user", "isEditable", "isPrefab"],
   mounted () {
     this.newItem = Object.assign({}, this.item)
+    if(this.isPrefab) {
+      this.isEditMode = true
+    }
   },
   methods: {
     onClick: function() {
-      if (this.isAdmin) return
+      if (this.isEditable) return
       this.$emit("selected", this.item)
     },
     async finishEditMode () {
+      if(!this.$refs.form.validate()){
+        return
+      }
+      if(!this.newItem.imageUrl){
+        return
+      }
+
       this.item.name = this.newItem.name
       this.item.amount = this.newItem.amount
       if(this.thumbnailImage != null){
@@ -111,14 +127,34 @@ export default {
           this.item.imageUrl = value['url']
         })
       }
-      await ItemManager.overwriteItem(this.item)
-      this.isEdit = false
+      if(this.isPrefab){
+        await ItemManager.addItem(this.newItem).then(item => {
+          console.log("new item:", item)
+          this.newItem.id = item.id
+          this.item.id = item.id
+          // this.$set(this.items, item.id, item)
+          this.$emit('created', this.item)
+        })
+      }
+      else{
+        await ItemManager.overwriteItem(this.item)
+      }
+      this.isEditMode = false
       this.thumbnailImage = null
     },
     cancelEditMode() {
       this.newItem = Object.assign({}, this.item)
-      this.isEdit = false
+      this.isEditMode = false
       this.thumbnailImage = null
+      this.$emit('cancelEdit')
+    },
+    onSelectImage(e) {
+      const file = e.target.files[0]
+      console.log('selected local image:', file)
+      const localURL = window.URL.createObjectURL(file)
+      console.log(' > URL', localURL)
+      this.newItem.imageUrl = localURL
+      this.thumbnailImage = file
     },
     selectImageFile() {
       this.$refs.input.click()
@@ -131,82 +167,15 @@ export default {
 </script>
 
 <style lang="sass" scoped>
-.card-spacer
-  margin-top: auto
 
-.disabled
-  opacity: 0.4
-
-.divider
-  width:100%
-  height: 0px
-  border-top: 0.8px solid #6767674f
-
-.toolbar
-  display: flex
-  flex-direction: row
-  padding: 8px
-  // border-top: 0.8px solid #6767674f
-
-.card-thumbnail
-  height: 200px
-  background-size: cover
-  background-position: center
-  background-clip:padding-box
-
-  &-overlay
-    width: 100%
-    height: 100%
-    background-color: #5a5a5a
-    opacity: 0.6
-    display:flex
-
-.select-image-icon
-  color: #fff
-  margin: auto
-
-.card-thumbnail:hover
-  cursor: pointer
-
-@media (max-height: 480px)
-  .card-thumbnail
-    height: 140px
-
-.item-summary
-  padding: 14px 5px
-  // margin: 0px 5px
-  border-top: 0.8px solid #6767674f
-
-.item-card.mdl-cell h2, h3
-  /* font-family: 'Avenir', Arial, Helvetica, sans-serif */
-  font-family: 'Nunito', 'M PLUS Rounded 1c', sans-serif
-  color: #2c3e50
-
-.item-amount
-  font-weight: bold
-
-.item-edit
-  input
-    max-width: 100%
-    -webkit-box-sizing: border-box
-    box-sizing: border-box
-    border: 1px solid rgba(105, 105, 105, 0.6)
-    border-radius: 4px
-    background-color: rgba(250, 250, 250, 0.8)
-    padding: 8px 10px
-
-h2
-  font-size: 28px
-  line-height: 32px
-  margin: 8px auto
-  font-weight: 600
-
-
-h3, .h3
-  font-size: 24px
-  margin: 6px auto
-  font-weight: 400
-  line-height: 26px
-
+.amount-display
+  display: block
+  p
+    line-height: 20px
+    font-size: 18px
+  h2, h3, h4, h5, p
+    display: inline
+    margin: auto 0 0 0
+    vertical-align: baseline
 
 </style>

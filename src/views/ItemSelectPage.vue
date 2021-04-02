@@ -35,19 +35,19 @@
           <v-row>
             <v-col
               cols="12"
-              sm="6"
+              sm="3"
               md="3"
               lg="2"
               class="pa-2"
               v-for="card in favItems"
+              v-show="card.enable || isEditable"
               :key="card.id">
               <item-card
                 :item="card"
                 :user="user"
-                :isAdmin="isEditable"
+                :isEditable="isEditable"
                 @selected = "(item) => addItemToCart(item)"
-                @remove = "(item) => unableItem(item)"
-                @enable = "(item) => enableItem(item)"
+                @switched="(enable) => setEnableItem(card, enable)"
               />
             </v-col>
           </v-row>
@@ -63,19 +63,19 @@
           <v-row>
             <v-col
               cols="12"
-              sm="6"
+              sm="3"
               md="3"
               lg="2"
               class="pa-2"
               v-for="card in items"
+              v-show="card.enable || isEditable"
               :key="card.id">
               <item-card
                 :item="card"
                 :user="user"
-                :isAdmin="isEditable"
-                @selected = "(item) => addItemToCart(item)"
-                @remove = "(item) => unableItem(item)"
-                @enable = "(item) => enableItem(item)"
+                :isEditable="isEditable"
+                @selected="(item) => addItemToCart(item)"
+                @switched="(enable) => setEnableItem(card, enable)"
               />
             </v-col>
           </v-row>
@@ -93,70 +93,45 @@
         >
       </cart>
 
-      <!-- Purchase Completed modal -->
-      <modal class="purchase-completed-modal" v-if="isPurchaseCompleted" @close="closePurchasedModal">
-        <div class="purchase-completed-modal-content">
-          <div class="purchase-completed-modal-header">
-            <h3>Purchase complete</h3>
-          </div>
-          <div class="purchase-completed-modal-main">
-            <div class="purchase-completed-modal-item-summary">
-              <p class="figure">{{getCartTotalValue() | absAmountDisplay}}</p>
+      <!-- Purchase Completed overlay -->
+      <v-overlay :value="isPurchaseCompleted">
+        <v-card color="white" class="pa-1 text-center" width="300">
+          <v-card-text class="primary--text text-h4 pb-0">支払い完了!</v-card-text>
+          <v-card-subtitle class="grey--text light-2 pt-0">{{ getNowString() }}</v-card-subtitle>
+          <v-card-text class="pt-3 pb-0">
+            <div class="amount-display">
+              <h3 class="primary--text text-h3 my-0 mr-1">{{ getCartTotalValue() }}</h3>
+              <h4 class="grey--text light-2">円</h4>
             </div>
-            <div class="purchase-completed-modal-user-summary">
-              <p>{{user.balance| billOrDepositMessage}}</p>
-              <p class="figure">{{user.balance| absAmountDisplay}}</p>
+          </v-card-text>
+          <v-card-text class="pt-3 pb-8">
+            <div class="amount-display">
+              <p class="grey--text light-1">{{ billOrDepositMessage(user.balance) }}</p>
+              <h5 class="grey--text my-0 mx-1">{{ user.balance | absAmountDisplay }}</h5>
+              <p class="grey--text">円</p>
             </div>
-          </div>
-          <div class="purchase-completed-modal-footer">
-            <button class="purchase-completed-modal-button"
-              @click="closePurchasedModal">Close</button>
-          </div>
-        </div>
-      </modal>
+          </v-card-text>
+          <v-btn
+            elevation="0"
+            block
+            color="accent"
+            @click="closePurchasedModal">Close</v-btn>
+        </v-card>
+      </v-overlay>
 
-      <modal class="additem-modal" v-if="isAddItem" @close="isAddItem = false">
-        <div class="additem-modal-content">
-          <h3>Add Item</h3>
-          <hr>
-          <div class="additem-field">
-            <div class="additem-field-name">
-              <p>Item name:</p>
-              <input class="h3" type="text" v-model="newItem.name">
-            </div>
-            <div class="additem-field-name">
-              <p>Thumbnail:</p>
-              <input type="file" @change="(e) => {setUploadImage(e.target.files[0])}"/>
-            </div>
-            <div class="additem-field-amount">
-              <p>Item amount:</p>
-              <input class="h3" type="number" v-model="newItem.amount">
-            </div>
-          </div>
-          <div class="additem-buttons">
-            <div class="additem-buttons-content">
-              <toolbar-icon
-                class="button-ellipse cancel"
-                @click="endAddItem"
-                :iconSize="32"
-                :padding="4"
-                :borderRadius="4"
-                >
-                cancel
-              </toolbar-icon>
-              <toolbar-icon
-                class="button-ellipse check"
-                @click="addNewItem"
-                :iconSize="32"
-                :padding="4"
-                :borderRadius="4"
-                >
-                done
-              </toolbar-icon>
-            </div>
-          </div>
+      <!-- new item overlay -->
+      <v-overlay :value="isAddItem" light>
+        <div :style="{width: '300px'}">
+          <item-card
+            :item="newItem"
+            :user="user"
+            :isEditable="false"
+            :isPrefab="true"
+            @created="item => addNewItem(item)"
+            @cancelEdit="endAddItem()"
+          />
         </div>
-      </modal>
+      </v-overlay>
     </div>
   </div>
 </template>
@@ -167,7 +142,6 @@ import ItemManager from "@/api/ItemManager"
 import UserManagerApi from "@/api/UserManager"
 import HistoryManagerApi from "@/api/HistoryManager"
 import AdminAuth from "@/api/AdminAuth"
-import UploaderApi from "../api/Uploader"
 import Modal from "../components/Modal"
 import CartWindow from "./CartWindow"
 import ItemCard from "./ItemCard"
@@ -183,7 +157,6 @@ export default {
       isAddItem: false,
       isPurchaseCompleted: false,
       isEditable: false,
-      uploadFile: Object(),
       newItem: {
         id: "",
         name: "",
@@ -224,45 +197,27 @@ export default {
       }
       return "-¥" + -1*amount
     },
-    billOrDepositMessage: function(amount){
-      if (amount >= 0) {
-        return "Your current deposit:"
-      }
-      return "Your bill of this month:"
-    },
     absAmountDisplay: function(amount) {
       if (amount >= 0) {
-        return "¥" + amount
+        return amount
       }
-      return "¥" + -1*amount
+      return -1*amount
     }
   },
   methods: {
     getAllItems: async function () {
       await ItemManager.getAllItems(false).then((items) => {this.items = items})
     },
-    addNewItem: async function () {
-      await UploaderApi.Uploader.uploadImageFile(this.uploadFile, "itemImages", null).then(value => {
-        this.newItem.imageUrl = value['url']
-      })
-      await ItemManager.addItem(this.newItem).then(item => {
-        console.log("new item:", item)
-        this.$set(this.items, item.id, item)
-      })
-        // this.$set(this.items, this.newItem.name, this.newItem)
+    addNewItem: async function (item) {
+      this.$set(this.items, item.id, item)
       this.endAddItem()
     },
-    unableItem: function(item) {
-      const items = ItemManager.unableItem(item)
-      this.updateItems(items)
-      // this.$delete(this.items, item.name)
-    },
-    enableItem: function(item) {
-      const items = ItemManager.enableItem(item)
+    setEnableItem (item, enable){
+      // console.log(enable)
+      const items = ItemManager.setEnableItem(item, enable)
       this.updateItems(items)
     },
     endAddItem: function () {
-      this.uploadFile = null
       this.newItem = {
         name: "",
         id: "",
@@ -277,8 +232,14 @@ export default {
       this.cleanUpCart()
       this.$router.push('/users')
     },
-    setUploadImage: async function (file) {
-      this.uploadFile = file
+    // setUploadImage: async function (file) {
+    //   this.uploadFile = file
+    // },
+    billOrDepositMessage: function(amount){
+      if (amount >= 0) {
+        return "残高:"
+      }
+      return "支払い額:"
     },
     checkOut: function () {
       console.log(this.cart)
@@ -301,7 +262,7 @@ export default {
           // show completed modal
           this.isCartEnabled = false
           this.isPurchaseCompleted = true
-          setTimeout(this.closePurchasedModal, 3000)
+          // setTimeout(this.closePurchasedModal, 3000)
         })
       })
     },
@@ -372,12 +333,16 @@ export default {
     updateItems: function(items) {
       this.items = {}
       this.items = items
+    },
+    getNowString() {
+      const now = new Date(Date.now())
+      return now.toLocaleString('ja')
     }
   },
   computed: {
     cartTotalValue: function () {
       return this.getCartTotalValue()
-    }
+    },
   }
 }
 
@@ -388,64 +353,17 @@ Vue.component("item-card", ItemCard)
 
 <style lang="sass" scoped>
 
-.header
-  height: 54px
-
-  &-toolbar
-    display: flex
-    flex-direction: row
-    margin: auto 4px auto 10px
-
-    &-button
-      margin: auto 2px
-
-      &-icon
-        border: 2px solid
-
-    &-user
-      display: flex
-      flex-direction: row
-      flex-wrap:wrap
-      height: 100%
-      margin: auto 0
-
-  &-right
-    margin-right: 16px
-
-  h3
-    margin: auto 7px auto 7px
-    font-size: 20px
-    font-weight: 600
-    line-height: 22px
-
-.backbutton::before
-  content: ""
-  position: absolute
-  top: 50%
-  left: 5px
-  margin-top: -10px
-  border: 10px solid transparent
-  border-right: 10px solid #303030
-  z-index: 1
-
-.backbutton::after
-  content: ""
-  position: absolute
-  top: 50%
-  left: 14px
-  margin-top: -6px
-  border: 6px solid transparent
-  border-right: 6px solid #ffcc00
-  z-index: 2
-
-.backbutton
-  margin-left: 32px
-
-.mdl-button
-  position: fixed
-  right: 10%
-  bottom: 10%
-  z-index: 10
+.amount-display
+  display: block
+  p
+    line-height: 20px
+    font-size: 16px
+  h2, h3, h4, h5, p
+    display: inline
+    margin: auto 0 0 0
+    vertical-align: baseline
+    //height: 100%
+    line-height: 100%
 
 .main-content
   // padding-top: 48px
@@ -475,7 +393,7 @@ Vue.component("item-card", ItemCard)
   position: fixed
   left: 20px
   bottom: 20px
-  width: 60vw
+  width: 80vw
 
   box-shadow: #2c3e50 0 1px 3.4px
 

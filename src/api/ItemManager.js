@@ -67,17 +67,10 @@ class ItemManagerApi {
     return this.items;
   }
 
-  unableItem(item) {
-    this.items[item.id].enable = false;
-    this.itemsCollection.doc(item.id).update('enable', false);
-    // delete this.items[item.id];
-    return this.items;
-  }
-  enableItem(item) {
-    this.items[item.id].enable = true;
-    this.itemsCollection.doc(item.id).update('enable', true);
-    // this.items[item.id] = item;
-    return this.items;
+  setEnableItem(item, state){
+    this.items[item.id].enable = state
+    this.itemsCollection.doc(item.id).update('enable', state)
+    return this.items
   }
 
   overwriteItem(item) {

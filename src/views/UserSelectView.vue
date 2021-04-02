@@ -20,11 +20,12 @@
         <v-row>
           <v-col
             cols="12"
-            sm="6"
+            sm="3"
             md="3"
             lg="2"
             class="pa-2"
-            v-for="user in enableUsers"
+            v-for="user in users"
+            v-show="user.enable || isEditable"
             :key="user.id"
             >
             <user-card
