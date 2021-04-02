@@ -1,26 +1,41 @@
 <template>
   <v-card elevation="2">
-    <v-toolbar color="accent" dense flat>
-      <v-toolbar-items>
-        <v-btn icon @click="closeCart()">
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-      </v-toolbar-items>
-      <v-toolbar-title> Total {{ cartTotalValue | amountDisplay }} </v-toolbar-title>
+    <v-system-bar height="32" color="accent" class="white--text">
+      <p class="my-0 ml-3 text-h6">Cart Items</p>
       <v-spacer/>
-      <v-toolbar-items>
-        <v-btn @click="onCheckoutClicked()" text>
-          <v-icon left>mdi-cart</v-icon>
-          checkout
+        <v-btn icon @click="isCartOpen = !isCartOpen"
+          tile
+          elevation="0">
+          <v-icon v-show="!isCartOpen" color="white">mdi-chevron-up</v-icon>
+          <v-icon v-show="isCartOpen" color="white">mdi-chevron-down</v-icon>
+          <!-- detail -->
         </v-btn>
-        <v-btn icon @click="isCartOpen = !isCartOpen">
-          <v-icon v-show="!isCartOpen">mdi-chevron-up</v-icon>
-          <v-icon v-show="isCartOpen">mdi-chevron-down</v-icon>
+        <v-btn icon @click="closeCart()"
+          tile
+          elevation="0"
+          >
+          <v-icon color="white">mdi-close</v-icon>
+          <!-- close -->
         </v-btn>
-      </v-toolbar-items>
+    </v-system-bar>
+
+    <v-toolbar color="white" dense flat>
+      <v-toolbar-title class="ml-9"> Total {{ cartTotalValue | amountDisplay }} </v-toolbar-title>
+      <v-spacer/>
+
+      <v-btn @click="onCheckoutClicked()"
+        elevation="0"
+        color="primary"
+        >
+        <v-icon left>mdi-cart</v-icon>
+        checkout
+      </v-btn>
     </v-toolbar>
+
+    <!-- expand view -->
     <v-expand-transition>
-      <div v-show="isCartOpen">
+      <div v-show="isCartOpen" class="px-2">
+        <v-divider class="mx-0 mb-1 mt-0"/>
         <v-simple-table dense>
           <thead>
             <tr>
@@ -53,9 +68,6 @@
 </template>
 
 <script>
-import Vue from "vue"
-import Icon from "../components/Icon"
-import CartRow from "../components/CartRow"
 
 export default {
   name: "CartWindow",
@@ -143,8 +155,6 @@ export default {
   }
 }
 
-Vue.component("icon", Icon)
-Vue.component("cart-row", CartRow)
 </script>
 
 <style lang="sass" scoped>

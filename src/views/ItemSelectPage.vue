@@ -262,7 +262,7 @@ export default {
           // show completed modal
           this.isCartEnabled = false
           this.isPurchaseCompleted = true
-          // setTimeout(this.closePurchasedModal, 3000)
+          setTimeout(this.closePurchasedModal, 5000)
         })
       })
     },
@@ -393,158 +393,17 @@ Vue.component("item-card", ItemCard)
   position: fixed
   left: 20px
   bottom: 20px
-  width: 80vw
+  width: 520px
+  max-width: 90vw
 
   box-shadow: #2c3e50 0 1px 3.4px
 
   @media (max-width: 480px)
     left: 0px
     bottom: 0px
+    max-width: 100vw
     width: 100vw
 
     box-shadow: #2c3e50 0 -0.8px 2.8px
 
-.purchase-completed-modal
-  padding: 0
-
-  &-content
-    min-width: 340px
-    background-color: #fcfcfc
-    h3, p, button
-      font-family: 'Nunito', 'M PLUS Rounded 1c', sans-serif
-
-  &-header
-    h3
-      margin: auto
-      font-size: 28px
-      line-height: 32px
-
-    display: flex
-    box-sizing: border-box
-    color: #2c3e50
-
-    // height: 60px
-    padding: 16px 20px
-
-  &-main
-    padding: 16px 30px
-    display: flex
-    flex-direction: column
-
-  &-item-summary, &-user-summary
-    display: flex
-    flex-direction: row
-    // height: 60px
-    justify-content:space-between
-
-
-  &-item-summary
-    p.figure
-      font-size: 42px
-      line-height: 46px
-      margin: 0px auto 20px auto
-
-
-
-  &-user-summary
-    p
-      margin: auto 0px
-      font-size: 20px
-      line-height: 26px
-
-    p.figure
-      font-size: 24px
-
-  &-footer
-    padding: 8px 16px
-
-  &-button
-    font-size: 24px
-    letter-spacing: 2px
-
-    width: 100%
-    height: 40px
-    border: none
-    color: #fff
-    background-color: #13ec1c
-    border-radius: 1px
-
-.additem-modal
-  display: flex
-  flex-direction: column
-  h3
-    font-family: 'Nunito', 'M PLUS Rounded 1c', sans-serif
-    font-size: 24px
-    margin: 6px auto
-    font-weight: 400
-
-  p
-    font-family: 'Nunito', 'M PLUS Rounded 1c', sans-serif
-    font-size: 18px
-    line-height: 20px
-    margin: 0
-    margin-right: 10px
-
-  &-content
-    padding: 10px 20px
-
-  .additem-field
-    .additem-field-name
-      align-content: right
-      display: flex
-      flex-direction: row
-      margin: 20px 0
-
-    &-amount
-      display: flex
-      flex-direction: row
-      margin: 20px 0
-
-    &-stocks
-      display: flex
-      flex-direction: row
-      margin: 20px 0
-
-    input
-      max-width: 100%
-      -webkit-box-sizing: border-box
-      box-sizing: border-box
-      border: 1px solid rgba(105, 105, 105, 0.6)
-      border-radius: 4px
-      background-color: rgba(250, 250, 250, 0.8)
-      padding: 6px 10px
-
-    .h3
-      font-family: 'Nunito', 'M PLUS Rounded 1c', sans-serif
-      font-size: 22px
-      line-height: 24px
-      margin: 8px auto
-      font-weight: 400
-
-  .additem-buttons
-      display: flex
-      flex-direction: row-reverse
-
-      &-content
-        display: flex
-        flex-direction: row
-        border-radius: 14px
-        border: none
-        width: max-content
-        padding: 4px 8px
-        background-color: rgba(250, 250, 250, 1)
-
-
-      .button-ellipse
-        margin: 0 2px
-
-        &.cancel
-          color: #ff3f81
-
-        &.check
-          color: #7af721
-
-  .additem-field-button
-    width: 100px
-    height: 30px
 </style>
