@@ -20,12 +20,6 @@ export default new Router({
       path: '/items',
       name: 'ItemSelectPage',
       component: ItemSelectPage,
-    },
-    {
-      path: '/users/admin',
-      name: 'UserSelectView',
-      component: UserSelectView,
-      props: {isEditable: true}
     }
   ]
 })

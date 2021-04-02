@@ -1,97 +1,78 @@
 <template>
-  <div class="item-card mdl-cell mdl-cell--2-col" v-if="item.enable||isAdmin"
-    :class="{disabled: !item.enable&&isAdmin}">
-    <card>
-      <div class="card-main" @click="onClick">
-        <!-- <div class="card-spacer"></div> -->
-        <div class="card-thumbnail"
-          :style="{backgroundImage: 'url('+item.imageUrl+')'}">
-          <!-- 非表示のinputタグ -->
-          <input type="file" style="display:none" ref="input" accept="image/jpeg, image/jpg, image/png" @change="e => thumbnailImage = e.target.files[0]">
-          <div v-show="isEdit" class="card-thumbnail-overlay">
-            <toolbar-icon
-                class="select-image-icon"
-                @click="selectImageFile()"
-                :iconSize="72"
-                :padding="4"
-                :borderRadius="4"
-                >
-                photo_library
-              </toolbar-icon>
-          </div>
-        </div>
-        <div class="item-summary">
-          <div class="item-edit" v-if="isEdit">
-            <input class="input h3" type="text" v-model="newItem.name" placeholder="Name"/>
-            <input class="input h3" type="text" v-model="newItem.amount" placeholder="Amount"/>
-            <div class="toolbar">
-              <toolbar-icon
-                @click="resetNewItem()"
-                :iconSize="32"
-                :padding="4"
-                :borderRadius="4"
-                >
-                cancel
-              </toolbar-icon>
-              <toolbar-icon
-                @click="apply()"
-                :iconSize="32"
-                :padding="4"
-                :borderRadius="4"
-                >
-                done
-              </toolbar-icon>
-            </div>
-          </div>
-          <div v-else>
-            <h2>{{item.name}}</h2>
-            <h3 class="item-amount">¥{{item.amount}}</h3>
-          </div>
-          <!-- <h3>Stocks {{item.stocks}}</h3> -->
-        </div>
+  <v-card @click="onClick" :ripple="!isAdmin">
+    <v-card-actions
+      class="pa-0"
+      :class="{secondary:item.enable, 'grey lighten-2':!item.enable}"
+      v-if="isAdmin">
+      <v-spacer></v-spacer>
+      <v-switch
+        inset dense
+        hide-details="true"
+        class="mr-0 mt-0"
+        v-model="item.enable"/>
+    </v-card-actions>
+
+    <v-img height="200" :src="item.imageUrl">
+      <!-- 非表示のfileインプット -->
+      <input type="file" style="display:none" ref="input" accept="image/jpeg, image/jpg, image/png" @change="e => thumbnailImage = e.target.files[0]">
+
+      <div @click="selectImageFile()" v-show="isEdit">
+        <v-overlay absolute :value="isEdit">
+          <v-icon x-large>mdi-camera</v-icon>
+        </v-overlay>
       </div>
-      <div class="divider"/>
-      <div class="toolbar"
-        v-if="isAdmin">
-        <toolbar-icon
-          class="danger-icon"
-          v-if="item.enable"
-          @click="$emit('remove', item)"
-          :iconSize="32"
-          :padding="4"
-          :borderRadius="4"
-          >
-          visibility_off
-        </toolbar-icon>
-        <toolbar-icon
-          class="danger-icon"
-          v-if="!item.enable"
-          @click="$emit('enable', item)"
-          :iconSize="32"
-          :padding="4"
-          :borderRadius="4"
-          >
-          visibility
-        </toolbar-icon>
-        <toolbar-icon
-          class="danger-icon"
-          @click="isEdit = !isEdit"
-          :iconSize="32"
-          :padding="4"
-          :borderRadius="4"
-          >
-          edit
-        </toolbar-icon>
-      </div>
-    </card>
-  </div>
+    </v-img>
+
+    <div v-if="!isEdit">
+      <v-card-title>{{ item.name }}</v-card-title>
+      <v-card-subtitle>{{ item.amount }}</v-card-subtitle>
+    </div>
+
+    <!-- edit form -->
+    <div v-else class="px-2 pt-2">
+      <v-text-field
+        dense
+        filled
+        hide-details="auto"
+        label="Item Name"
+        :rules="nameRules"
+        v-model="newItem.name"/>
+      <v-text-field
+        class="mt-2"
+        dense
+        filled
+        hide-details="auto"
+        label="Value"
+        :rules="nameRules"
+        type="Number"
+        v-model="newItem.amount"/>
+      <v-toolbar flat dense>
+        <v-spacer/>
+        <v-toolbar-items>
+          <v-btn icon @click="cancelEditMode()">
+            <v-icon>mdi-cancel</v-icon>
+          </v-btn>
+          <v-btn icon @click="finishEditMode()">
+            <v-icon>mdi-check</v-icon>
+          </v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
+    </div>
+
+    <div v-if="isAdmin">
+      <v-divider class="my-0 mx-2"/>
+      <v-card-actions>
+        <v-spacer/>
+        <v-btn icon
+          @click="isEdit=!isEdit">
+          <v-icon>mdi-pencil</v-icon>
+        </v-btn>
+      </v-card-actions>
+    </div>
+  </v-card>
 </template>
 
 <script>
-import Vue from "vue"
-import Card from "../components/Card"
-import Icon from "../components/Icon"
-
 import ItemManager from "@/api/ItemManager"
 import UploaderApi from "../api/Uploader"
 
@@ -105,19 +86,22 @@ export default {
         name: "",
         amount: "",
         imageUrl: ""
-      }
+      },
+      nameRules: [
+        value => !!value || 'Required'
+      ]
     }
   },
   props: ["item", "user", "isAdmin"],
   mounted () {
-    this.resetNewItem()
+    this.newItem = Object.assign({}, this.item)
   },
   methods: {
     onClick: function() {
       if (this.isAdmin) return
       this.$emit("selected", this.item)
     },
-    async apply () {
+    async finishEditMode () {
       this.item.name = this.newItem.name
       this.item.amount = this.newItem.amount
       if(this.thumbnailImage != null){
@@ -131,7 +115,7 @@ export default {
       this.isEdit = false
       this.thumbnailImage = null
     },
-    resetNewItem() {
+    cancelEditMode() {
       this.newItem = Object.assign({}, this.item)
       this.isEdit = false
       this.thumbnailImage = null
@@ -144,8 +128,6 @@ export default {
   }
 }
 
-Vue.component("card", Card)
-Vue.component("icon", Icon)
 </script>
 
 <style lang="sass" scoped>

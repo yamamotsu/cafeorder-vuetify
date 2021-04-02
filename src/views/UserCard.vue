@@ -1,13 +1,16 @@
 <template>
     <v-card
-      class="user-card pa-1"
+      class="user-card pa-2"
       :colorName="user.color">
       <!-- action buttons -->
-      <v-card-actions v-if="isEditable">
+      <v-card-actions
+        class="px-0 pt-0 pb-1"
+        v-if="isEditable">
         <v-spacer></v-spacer>
-        <v-switch inset dense
+        <v-switch
+          inset dense
           hide-details="true"
-          class="mr-0"
+          class="mr-0 mt-0"
           :prepend-icon="visibleIconName"
           v-model="user.enable"/>
       </v-card-actions>

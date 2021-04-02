@@ -1,6 +1,6 @@
 <template>
   <div class="user-select-page">
-    <v-app-bar color="primary">
+    <v-app-bar dense color="primary">
       <v-spacer/>
       <v-toolbar-title>LIMU</v-toolbar-title>
       <v-spacer/>
@@ -16,7 +16,7 @@
       </v-btn>
     </v-app-bar>
     <div class="main-content">
-      <v-container class="mdl-grid">
+      <v-container>
         <v-row>
           <v-col
             cols="12"
@@ -119,12 +119,7 @@ export default {
         "hasDetail": false
       },
       isShowInfo: false,
-    }
-  },
-  props: {
-    isEditable: {
-      type: Boolean,
-      default: false
+      isEditable: false,
     }
   },
   async mounted() {

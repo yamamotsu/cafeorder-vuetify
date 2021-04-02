@@ -1,58 +1,28 @@
 <template>
   <div class="item-select-page">
-    <header class="header">
-      <items-header>
-        <template v-slot:leftside>
-          <div class="header-toolbar">
-            <div class="header-toolbar-button header-toolbar-back">
-              <icon
-                class="header-toolbar-button-icon"
-                @click="backToUserPage()"
-                :iconSize="30"
-                :padding="0"
-                :borderRadius="4"
-                >
-                keyboard_arrow_left
-              </icon>
-            </div>
-            <div class="header-toolbar-user">
-              <h3 class="header-toolbar-user-name">
-                {{user.name}}
-              </h3>
-              <h3 class="header-toolbar-user-balance">
-                {{user.balance | amountDisplay}}
-              </h3>
-            </div>
-          </div>
-        </template>
-        <template v-slot:rightside>
-          <div class="header-toolbar header-right">
-            <div class="header-toolbar-button">
-              <icon
-                class="header-toolbar-button-icon header-toolbar-button-edit"
-                @click="isEditable=!isEditable"
-                :iconSize="30"
-                :padding="2"
-                :borderRadius="4"
-                >
-                create
-              </icon>
-            </div>
-            <div class="header-toolbar-button">
-              <icon
-                class="header-toolbar-button-icon"
-                @click="isAddItem=true"
-                :iconSize="30"
-                :padding="0"
-                :borderRadius="4"
-                >
-                add
-              </icon>
-            </div>
-          </div>
-        </template>
-      </items-header>
-    </header>
+    <v-app-bar dense color="primary">
+      <v-btn
+        text
+        color="secondary"
+        @click="backToUserPage()">
+        <v-icon midium left
+          color="secondary">mdi-arrow-left</v-icon>
+          Back
+      </v-btn>
+      <v-spacer/>
+      <v-toolbar-title>{{user.name}}: {{user.balance | amountDisplay}}</v-toolbar-title>
+      <v-spacer/>
+      <v-btn icon>
+        <v-icon midium
+          color="secondary"
+          @click="isEditable = !isEditable">mdi-pencil</v-icon>
+      </v-btn>
+      <v-btn icon>
+        <v-icon midium
+          color="secondary"
+          @click="isAddItem = true">mdi-plus</v-icon>
+      </v-btn>
+    </v-app-bar>
 
     <div class="main-content">
       <!-- Favorite Items -->
@@ -61,18 +31,27 @@
         <div class="favorites-title section-title">
           <h3>Quickpicker</h3>
         </div>
-        <div class="mdl-grid">
-          <item-card
-            v-for="card in favItems"
-            :key="card.id"
-            :item="card"
-            :user="user"
-            :isAdmin="isEditable"
-            @selected = "(item) => addItemToCart(item)"
-            @remove = "(item) => unableItem(item)"
-            @enable = "(item) => enableItem(item)"
-          ></item-card>
-        </div>
+        <v-container>
+          <v-row>
+            <v-col
+              cols="12"
+              sm="6"
+              md="3"
+              lg="2"
+              class="pa-2"
+              v-for="card in favItems"
+              :key="card.id">
+              <item-card
+                :item="card"
+                :user="user"
+                :isAdmin="isEditable"
+                @selected = "(item) => addItemToCart(item)"
+                @remove = "(item) => unableItem(item)"
+                @enable = "(item) => enableItem(item)"
+              />
+            </v-col>
+          </v-row>
+        </v-container>
       </div>
 
       <!-- All Item Cards -->
@@ -80,18 +59,27 @@
         <div class="section-title">
           <h3>All items</h3>
         </div>
-        <div class="all-content mdl-grid">
-          <item-card
-            v-for="card in items"
-            :key="card.id"
-            :item="card"
-            :user="user"
-            :isAdmin="isEditable"
-            @selected = "(item) => addItemToCart(item)"
-            @remove = "(item) => unableItem(item)"
-            @enable = "(item) => enableItem(item)"
-          ></item-card>
-        </div>
+        <v-container>
+          <v-row>
+            <v-col
+              cols="12"
+              sm="6"
+              md="3"
+              lg="2"
+              class="pa-2"
+              v-for="card in items"
+              :key="card.id">
+              <item-card
+                :item="card"
+                :user="user"
+                :isAdmin="isEditable"
+                @selected = "(item) => addItemToCart(item)"
+                @remove = "(item) => unableItem(item)"
+                @enable = "(item) => enableItem(item)"
+              />
+            </v-col>
+          </v-row>
+        </v-container>
       </div>
 
       <!-- Item Cart -->
@@ -178,13 +166,10 @@ import Vue from "vue"
 import ItemManager from "@/api/ItemManager"
 import UserManagerApi from "@/api/UserManager"
 import HistoryManagerApi from "@/api/HistoryManager"
-import ItemCard from "./ItemCard"
 import AdminAuth from "@/api/AdminAuth"
 import UploaderApi from "../api/Uploader"
-import Header from "../components/Header"
 import Modal from "../components/Modal"
 import CartWindow from "./CartWindow"
-import Icon from"../components/Icon"
 
 export default {
   name: "ItemSelectPage",
@@ -395,11 +380,8 @@ export default {
   }
 }
 
-Vue.component("item-card", ItemCard)
-Vue.component("items-header", Header)
 Vue.component("modal", Modal)
 Vue.component("cart", CartWindow)
-Vue.component("icon", Icon)
 </script>
 
 <style lang="sass" scoped>

@@ -15,6 +15,7 @@ pnpm-debug.log*
 
 # firebase local emulator data
 .firebase/local
+firebase-debug.log
 firestore-debug.log
 ui-debug.log
 firebase-config.js

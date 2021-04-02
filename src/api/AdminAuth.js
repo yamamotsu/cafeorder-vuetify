@@ -8,14 +8,17 @@ class AdminAuth {
   async loginWithGoogle () {
     // ログイン済みの場合そのままuserを返す
     if (firebase.auth().currentUser) {
-      this.user = firebase.auth().currentUser;
+      this.user = firebase.auth().currentUser
+      console.log('auth info:', this.user)
       return this.user
     }
     const result = await firebase.auth().getRedirectResult()
     if (result.credential) {
       this.user = result.user
+      console.log('auth info:', this.user)
       return this.user
     } else {
+      console.log('redirecting to sign-in page')
       return firebase.auth().signInWithRedirect(new firebase.auth.GoogleAuthProvider())
     }
     // await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(function (result) {
