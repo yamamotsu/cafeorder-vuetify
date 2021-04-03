@@ -15,7 +15,8 @@
           inset dense
           hide-details="true"
           class="mx-0 my-0"
-          v-model="user.enable"/>
+          v-model="user.enable"
+          @change="updateUserDB(user)"/>
       </v-card-actions>
 
       <!-- edit form -->
@@ -97,7 +98,7 @@
         <v-btn icon small
           :color="getVisibleColor(colorTheme.tooltip)"
           @click="isEdit = !isEdit">
-          <v-icon>mdi-pencil</v-icon>
+          <v-icon>mdi-cog</v-icon>
         </v-btn>
         <v-btn icon small
           :color="getVisibleColor(colorTheme.tooltip)"

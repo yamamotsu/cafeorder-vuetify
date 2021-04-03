@@ -101,16 +101,21 @@ class UserManagerApi {
         if(record.type==="purchase"){
           record.items.forEach(item => {
             const id = ItemManager.getIdFromItem(item);
-            if(id in items_dict){
-              items_dict[id].quantity += item.quantity;
+            if(id != -1){
+              if(id in items_dict){
+                items_dict[id].quantity += item.quantity;
+              }else{
+                items_dict[id] = item;
+              }
             }else{
-              items_dict[id] = item;
+              console.error("item:", item.name, "'s record is no longer available.")
             }
           });
         }else{
           // console.log("record type is not purchase");
         }
       });
+      console.log("items_dict:", items_dict)
       // all_itemsのうちよく購入されているものをfavitems_dictに登録
       Object.keys(items_dict).forEach(id => {
         if(items_dict[id].quantity < n_purchased){
@@ -118,6 +123,7 @@ class UserManagerApi {
         }
         favitems_dict[id] = all_items[id];
       });
+      console.log("favitems_dict:", favitems_dict)
       // favitems_dictをリスト化・購入数の降順で並べ替え
       let favitems_list = Object.values(favitems_dict).sort(function(a,b){
         if(a.quantity > b.quantity) return -1;

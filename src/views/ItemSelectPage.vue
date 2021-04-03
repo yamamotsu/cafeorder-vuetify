@@ -13,11 +13,6 @@
       <v-spacer/>
       <v-toolbar-title class="white--text text-h5">{{user.name}}: {{user.balance | amountDisplay}}</v-toolbar-title>
       <v-spacer/>
-      <!-- <v-btn icon>
-        <v-icon midium
-          color="secondary"
-          @click="isEditable = !isEditable">mdi-pencil</v-icon>
-      </v-btn> -->
       <v-switch
         dense
         :hide-details="true"
@@ -44,10 +39,7 @@
         <v-container>
           <v-row>
             <v-col
-              cols="12"
-              sm="3"
-              md="3"
-              lg="2"
+              cols="12" sm="3" md="3" lg="2"
               class="pa-2"
               v-for="card in favItems"
               v-show="card.enable || isEditable"
@@ -72,12 +64,9 @@
         <v-container>
           <v-row>
             <v-col
-              cols="12"
-              sm="3"
-              md="3"
-              lg="2"
+              cols="12" sm="3" md="3" lg="2"
               class="pa-2"
-              v-for="card in items"
+              v-for="card in sortedItems"
               v-show="card.enable || isEditable"
               :key="card.id">
               <item-card
@@ -190,17 +179,11 @@ export default {
         this.$router.push({name: "UserSelectPage"})
     }
     this.adminuser = await AdminAuth.Auth.loginWithGoogle()
-    let self = this
-    await this.getAllItems().then(async function(){
-      console.log('items:', self.items)
-      await UserManagerApi.UserManager.fetchFavoriteItems(
-        self.user,
-        self.items
-      ).then(favItems => {
-        console.log("favItems:", favItems)
-        self.favItems = favItems
-      })
-    })
+    await this.getAllItems()
+    console.log('items:', this.items)
+    const favItems = await UserManagerApi.UserManager.fetchFavoriteItems(this.user, this.items)
+    console.log("favItems:", favItems)
+    this.favItems = favItems
   },
   filters: {
     amountDisplay: function(amount) {
@@ -218,7 +201,7 @@ export default {
   },
   methods: {
     getAllItems: async function () {
-      await ItemManager.getAllItems(false).then((items) => {this.items = items})
+      this.items = await ItemManager.getAllItems(false)
     },
     addNewItem: async function (item) {
       this.$set(this.items, item.id, item)
@@ -357,6 +340,14 @@ export default {
     cartTotalValue: function () {
       return this.getCartTotalValue()
     },
+    sortedItems () {
+      return  Object.values(this.items).sort((x, y) => {
+        if (x.enable != y.enable) {
+          return x.enable ? -1 : +1
+        }
+        return x.name < y.name ? -1 : +1
+      })
+    }
   }
 }
 

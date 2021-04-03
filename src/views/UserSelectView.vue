@@ -9,15 +9,19 @@
       <v-spacer/>
       <v-toolbar-title class="white--text text-h5">LIMU 喫茶注文システム</v-toolbar-title>
       <v-spacer/>
-      <v-btn icon>
-        <v-icon midium
-          color="secondary"
-          @click="isEditable = !isEditable">mdi-pencil</v-icon>
-      </v-btn>
-      <v-btn icon>
-        <v-icon midium
-          color="secondary"
-          @click="isAddUser = true">mdi-plus</v-icon>
+      <v-switch
+        dense
+        :hide-details="true"
+        color="secondary"
+        v-model="isEditable"
+        prepend-icon="mdi-account-edit"
+        class="mr-4"
+        />
+      <v-btn
+        icon
+        color="secondary"
+        @click="isAddUser = true">
+        <v-icon>mdi-account-plus</v-icon>
       </v-btn>
     </v-app-bar>
 
@@ -34,7 +38,7 @@
             md="3"
             lg="2"
             class="pa-2"
-            v-for="user in users"
+            v-for="user in sortedUsers"
             v-show="user.enable || isEditable"
             :key="user.id"
             >
@@ -109,7 +113,7 @@ export default {
     this.loading = false
   },
   methods: {
-     async getAllUsers () {
+    async getAllUsers () {
       this.users = await UserManagerApi.UserManager.getAllUsers()
       console.log("all users:", this.users)
     },
@@ -174,6 +178,14 @@ export default {
     }
   },
   computed: {
+    sortedUsers () {
+      return Object.values(this.users).sort((x, y) => {
+        if (x.enable != y.enable) {
+          return x.enable ? -1 : +1
+        }
+        return x.name < y.name ? -1 : +1
+      })
+    }
   }
 }
 
