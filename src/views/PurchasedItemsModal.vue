@@ -1,5 +1,49 @@
 <template>
-  <modal class="modal" @close="$emit('close');">
+  <v-bottom-sheet inset :value="value" @input="v => $emit('input', v)">
+    <v-card>
+    <v-toolbar flat max-height="80vh">
+      <v-toolbar-title class="primary--text">history</v-toolbar-title>
+      <v-spacer/>
+      <v-btn icon @click="onLeftArrowClicked()">
+        <v-icon>mdi-chevron-left</v-icon>
+      </v-btn>
+      {{ year }} {{ month | monthStr }}
+      <v-btn icon @click="onRightArrowClicked()" :disabled="year == now.getFullYear() && month-1 == now.getMonth()">
+        <v-icon>mdi-chevron-right</v-icon>
+      </v-btn>
+
+    </v-toolbar>
+
+    <v-data-table
+      :headers="headers"
+      :items="items"
+      :items-per-page="100"
+      fixed-header
+      height="80vh">
+    </v-data-table>
+    <!-- <v-simple-table fixed-header height="80vh">
+      <thead>
+        <tr>
+          <th class="text-center">Date</th>
+          <th class="text-center">Time</th>
+          <th class="text-center">Name</th>
+          <th class="text-center">Quantity</th>
+          <th class="text-center">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="record in history" :key="record.id">
+          <td>{{ record.timestamp.getDate() }}</td>
+          <td>{{ record.timestamp | date2time }}</td>
+          <td>{{ record | recordName }}</td>
+          <td>{{ record.quantity }}</td>
+          <td>{{ record.subtotal }}</td>
+        </tr>
+      </tbody>
+    </v-simple-table> -->
+    </v-card>
+  </v-bottom-sheet>
+  <!-- <modal class="modal" @close="$emit('close');">
     <div class="modal-content">
       <div class="header">
         <div class="header-top">
@@ -56,11 +100,11 @@
             <div class="listitem-subtotal">{{item.amount * item.quantity}}</div>
           </li>
         </ul>
-        <!-- <list-item class="list-item" v-for="item in items" :key="item.id" :item="item"></list-item> -->
+        <list-item class="list-item" v-for="item in items" :key="item.id" :item="item"></list-item> 
       </div>
 
     </div>
-  </modal>
+  </modal> -->
 </template>
 
 <script>
@@ -78,11 +122,18 @@ export default {
       year: 0,
       month: 1,
       date: this.getThisMonth(),
+      now: this.getThisMonth(),
       items: [],
-      all_items: []
+      all_items: [],
+      headers: [
+        { text:"Name", value:"name" },
+        { text:"Value", value:"amount" },
+        { text:"Quantity", value:"quantity" },
+        { text:"Subtotal", value:"subtotal" },
+      ]
     };
   },
-  props: [],
+  props: ['value'],
   mounted: function() {
     ItemManager.getAllItems(true).then( all_items => {
       this.all_items = all_items;
@@ -137,8 +188,15 @@ export default {
                 if(!('amount' in item) && id in all_items){
                   items_dict[id].amount = all_items[id].amount;
                 }
+                // if(!('subtotal' in item)){
+                //   items_dict[id].subtotal = items_dict[id].amount * items_dict[id].quantity
+                // }
               }
             });
+
+            Object.keys(items_dict).forEach(id => {
+              items_dict[id].subtotal = items_dict[id].quantity * items_dict[id].amount
+            })
           }else{
             // console.log("record type is not purchase");
           }

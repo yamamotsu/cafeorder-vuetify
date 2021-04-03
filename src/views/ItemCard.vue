@@ -1,5 +1,5 @@
 <template>
-  <v-card @click="onClick" :ripple="!isEditable && !isPrefab">
+  <v-card light @click="onClick" :ripple="!isEditable && !isPrefab">
     <v-card-actions
       class="pa-0"
       :class="{secondary:item.enable, 'grey lighten-2':!item.enable}"
@@ -26,6 +26,7 @@
       </div>
     </v-img>
 
+    <!-- Item Summary -->
     <div v-if="!isEditMode">
       <v-card-title class="grey--text text-h5 px-3 pt-3 pb-0">{{ item.name }}</v-card-title>
       <!-- <v-card-subtitle>a</v-card-subtitle> -->
@@ -98,7 +99,7 @@ export default {
       ],
     }
   },
-  props: ["item", "user", "isEditable", "isPrefab"],
+  props: ["item", "user", "isEditable", "isPrefab", "count"],
   mounted () {
     this.newItem = Object.assign({}, this.item)
     if(this.isPrefab) {

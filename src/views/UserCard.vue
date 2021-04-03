@@ -1,22 +1,26 @@
 <template>
     <v-card
-      class="user-card pa-2"
-      :colorName="user.color">
+      light
+      class="user-card pa-0"
+      :style="{backgroundColor: user.color}"
+      >
       <!-- action buttons -->
       <v-card-actions
-        class="px-0 pt-0 pb-1"
-        v-if="isEditable">
-        <v-spacer></v-spacer>
+        class="py-0"
+        v-show="isEditable"
+        :class="{secondary:user.enable, 'grey lighten-2':!user.enable}"
+        >
         <v-switch
           inset dense
           hide-details="true"
-          class="mr-0 mt-0"
-          :prepend-icon="visibleIconName"
+          class="mx-0 my-0"
           v-model="user.enable"/>
       </v-card-actions>
 
       <!-- edit form -->
-      <div
+      <v-form
+        ref="form"
+        class="pa-2"
         v-if="isEdit">
         <v-text-field
           dense
@@ -36,54 +40,114 @@
           v-model="newUser.balance"/>
         <v-chip-group column>
           <v-spacer/>
-          <v-chip @click="newUser.balance += 5000">+5000</v-chip>
-          <v-chip @click="newUser.balance += 1000">+1000</v-chip>
+          <v-chip
+            color="red lighten-1 white--text"
+            @click="newUser.balance += 5000">
+            +5000
+          </v-chip>
+          <v-chip
+            color="orange lighten-1 white--text"
+            @click="newUser.balance += 1000">
+            +1000
+          </v-chip>
         </v-chip-group>
-        <v-toolbar flat dense>
+
+        <v-toolbar flat dense color="transparent">
           <v-spacer/>
           <v-toolbar-items>
-            <v-btn icon @click="cancelEditMode()">
+            <v-btn icon @click="cancelEditMode()"
+              color="grey">
               <v-icon>mdi-cancel</v-icon>
             </v-btn>
-            <v-btn icon @click="finishEditMode()">
+            <v-btn icon @click="finishEditMode()"
+              color="red accent-3">
               <v-icon>mdi-check</v-icon>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-      </div>
+      </v-form>
 
       <!-- summary -->
       <div
+        class="summary py-8 px-0"
         v-else
         @click="onClick">
-        <v-card-title v-text="user.name"/>
-        <v-card-subtitle>{{user.balance | amountDisplay}}</v-card-subtitle>
+        <v-card-text class="text-center text-h4 px-0 py-0"
+          :style="{'color':getVisibleColor(colorTheme.name)}"
+          v-text="user.name"/>
+        <v-card-text class="primary--text text-h5 px-0 pt-3 pb-0">
+          <div class="amount-display">
+            <p class="text-h5"
+              :style="{color:getVisibleColor(colorTheme.balance)}">
+              {{ balanceSign }}
+            </p>
+            <h5 class="text-h5 ma-0 ml-0"
+              :style="{color:getVisibleColor(colorTheme.balance)}">
+              {{ user.balance | abs }}
+            </h5>
+          </div>
+        </v-card-text>
       </div>
 
       <!-- action buttons -->
-      <!-- <v-divider/> -->
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn icon small @click="isEdit = !isEdit">
+      <v-divider class="my-0 mx-2"/>
+      <v-card-actions >
+        <v-spacer/>
+        <v-btn icon small
+          :color="getVisibleColor(colorTheme.tooltip)"
+          @click="isEdit = !isEdit">
           <v-icon>mdi-pencil</v-icon>
         </v-btn>
-        <v-btn icon>
+        <v-btn icon small
+          :color="getVisibleColor(colorTheme.tooltip)"
+          @click="isColorSelectMode = !isColorSelectMode">
           <v-icon>mdi-palette</v-icon>
         </v-btn>
-        <v-btn icon @click="isShowHistory = true">
+        <v-btn icon small
+          :color="getVisibleColor(colorTheme.tooltip)"
+          @click="onUndoButtonClicked()">
+          <v-icon>mdi-undo</v-icon>
+        </v-btn>
+        <v-btn icon small
+          :color="getVisibleColor(colorTheme.tooltip)"
+          @click="isShowHistory = true">
           <v-icon>mdi-history</v-icon>
         </v-btn>
+        <v-spacer/>
       </v-card-actions>
 
       <!-- history -->
       <history-modal :user="user" v-model="isShowHistory"/>
+
+      <!-- snackbar -->
+      <v-snackbar v-model="snackbar.show" :timeout="snackbar.duration">
+        {{ snackbar.text}}
+      </v-snackbar>
+
+      <!-- color picker -->
+      <v-expand-transition>
+        <v-color-picker
+          :swatches="colorTable"
+          hide-canvas
+          hide-sliders
+          hide-inputs
+          hide-mode-switch
+          show-swatches
+          class="grey lighten-4"
+          elevation="0"
+          v-show="isColorSelectMode"
+          v-model="user.color"
+          @input="value=>onColorSelected(value)"
+        />
+      </v-expand-transition>
     </v-card>
 </template>
 
 <script>
 import Vue from "vue"
-import Colors from "../api/Colors"
+import ColorUtil from "../api/Colors"
 import ColorPallet from "../components/ColorPallet"
+import colors from 'vuetify/lib/util/colors'
 import HistoryManagerApi from "../api/HistoryManager"
 import UserManagerApi from "../api/UserManager"
 import HistoryView from "./HistoryModal"
@@ -93,38 +157,41 @@ export default {
   data: function() {
     return {
       isColorSelectMode: false,
-      isAmountEditMode: false,
       isEdit: false,
+      snackbar: {
+        show: false,
+        snackbarText: "",
+        duration: 1000
+      },
       newUser: {},
-      showDangerZone: false,
+      colorTheme: {
+        name: this.$vuetify.theme.themes.light.primary,
+        balance: colors.grey.darken1,
+        tooltip: colors.grey.darken1,
+      },
       isShowHistory: false,
       nameRules: [
         value => !!value || 'Required'
+      ],
+      colorTable: [
+        ["#FD7665", "#9BFD89", "#6F74FD", "#5a5a5a"],
+        ["#FAB472", "#95FAD2", "#D17EFA", "#9a9a9a"],
+        ["#FDDB68", "#8BDAFD", "#FD729F", "#ffffff"]
       ]
     }
   },
   props: ["user", "isEditable"],
   computed: {
-    colorValue: function() {
-      return Colors.colortable[this.user.color]
+    balanceSign () {
+      return this.user.balance >= 0 ? '+¥' : '-¥'
     },
-    visibleIconName () {
-      if (this.user.enable) {
-        return 'mdi-eye'
-      }else{
-        return 'mdi-eye-off'
-      }
-    }
   },
   mounted () {
     this.newUser =  Object.assign({}, this.user)
   },
   filters: {
-    amountDisplay: function(amount) {
-      if (amount >= 0) {
-        return "+¥" + amount
-      }
-      return "-¥" + -1*amount
+    abs (val) {
+      return Math.abs(val)
     }
   },
   methods: {
@@ -132,56 +199,57 @@ export default {
       // console.log("this user:"+this.user.name)
       this.$emit("onClicked", this.user)
     },
-    getColorValue (colorName) {
-      return Colors.colortable[colorName]
-    },
     onColorSelected (color) {
-      // console.log(color)
-      this.user.color = color
+      console.log(color)
+      // this.user.color = color
       // this.$emit("onUserDataChanged", this.user)
       this.updateUserDB(this.user)
+      this.isColorSelectMode = false
     },
-    onUndoButtonClicked () {
+    async onUndoButtonClicked () {
       var isUndo = confirm("Would you UNDO your last operation?")
       if (!isUndo) {
         return
       }
 
-      HistoryManagerApi.HistoryManager.revertUserHistory(this.user).then(
-        () => {
-          this.updateUserDB(this.user)
-        }
-      )
+      await HistoryManagerApi.HistoryManager.revertUserHistory(this.user)
+      await this.updateUserDB(this.user)
+      this.showSnackBar("Undo completed")
     },
-    showHistory () {
-      this.isShowHistory = true
+    showSnackBar(message, duration=2000){
+      this.snackbar.text = message
+      this.snackbar.duration = duration
+      this.snackbar.show = true
     },
-    clearInputValue () {
-      // this.newUser.balance = 0
-      this.addSetBalanceHistory(0)
-
-      this.user.balance = 0
-      this.updateUserDB(this.user)
-    },
-    finishEditMode () {
+    async finishEditMode () {
+      if(!this.$refs.form.validate()){
+        this.showSnackBar("不正な入力です")
+        return
+      }
       if (this.user.balance != this.newUser.balance) {
-        this.addSetBalanceHistory(this.newUser.balance)
+        await this.addSetBalanceHistory(this.newUser.balance)
       }
       // this.user = Object.assign({}, this.newUser)
       this.user.name = this.newUser.name
       this.user.balance = this.newUser.balance
-      this.updateUserDB(this.user)
+      await this.updateUserDB(this.user)
+      this.showSnackBar("ユーザー:"+this.user.name+"の情報を変更しました")
       this.isEdit = false
     },
     cancelEditMode () {
       this.newUser = Object.assign({}, this.user)
       this.isEdit = false
     },
-    updateUserDB (newUser) {
-      UserManagerApi.UserManager.overwriteUser(newUser)
+    async updateUserDB (newUser) {
+      await UserManagerApi.UserManager.overwriteUser(newUser)
     },
-    addSetBalanceHistory (newBalance) {
-      HistoryManagerApi.HistoryManager.addSetValueHistory(this.user, newBalance)
+    async addSetBalanceHistory (newBalance) {
+      await HistoryManagerApi.HistoryManager.addSetValueHistory(this.user, newBalance)
+    },
+    getVisibleColor(color, color2="#FFFFFF"){
+      const diff1 = ColorUtil.getColorDiff(this.user.color, color)
+      const diff2 = ColorUtil.getColorDiff(this.user.color, color2)
+      return diff1 > diff2 ? color : color2
     }
   }
 }
@@ -191,6 +259,17 @@ Vue.component("history-modal", HistoryView)
 </script>
 
 <style lang="sass" scoped>
+.summary
+  cursor: pointer
 
+.amount-display
+  display: block
+  p
+    line-height: 20px
+    font-size: 18px
+  h2, h3, h4, h5, p
+    display: inline
+    margin: auto 0 0 0
+    vertical-align: baseline
 
 </style>

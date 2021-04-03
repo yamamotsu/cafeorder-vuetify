@@ -47,8 +47,7 @@
         <i class="material-icons">add</i>
       </button>
 
-      <items-history v-if="showItemsHistory"
-        @close="showItemsHistory=false">
+      <items-history v-model="showItemsHistory">
       </items-history>
 
       <modal class="adduser-modal" v-if="isAddUser" @close="endAddUser()">

@@ -10,7 +10,7 @@
           Back
       </v-btn>
       <v-spacer/>
-      <v-toolbar-title>{{user.name}}: {{user.balance | amountDisplay}}</v-toolbar-title>
+      <v-toolbar-title class="secondary--text text-h5">{{user.name}}: {{user.balance | amountDisplay}}</v-toolbar-title>
       <v-spacer/>
       <v-btn icon>
         <v-icon midium
@@ -42,13 +42,13 @@
               v-for="card in favItems"
               v-show="card.enable || isEditable"
               :key="card.id">
-              <item-card
-                :item="card"
-                :user="user"
-                :isEditable="isEditable"
-                @selected = "(item) => addItemToCart(item)"
-                @switched="(enable) => setEnableItem(card, enable)"
-              />
+                <item-card
+                  :item="card"
+                  :user="user"
+                  :isEditable="isEditable"
+                  @selected = "(item) => addItemToCart(item)"
+                  @switched="(enable) => setEnableItem(card, enable)"
+                />
             </v-col>
           </v-row>
         </v-container>
@@ -121,7 +121,7 @@
 
       <!-- new item overlay -->
       <v-overlay :value="isAddItem" light>
-        <div :style="{width: '300px'}">
+        <div :style="{width: '250px'}">
           <item-card
             :item="newItem"
             :user="user"
