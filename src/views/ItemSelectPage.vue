@@ -2,25 +2,35 @@
   <div class="item-select-page">
     <v-app-bar dense color="primary">
       <v-btn
-        text
+        elevation="0"
+        outlined
         color="secondary"
         @click="backToUserPage()">
         <v-icon midium left
-          color="secondary">mdi-arrow-left</v-icon>
+          >mdi-arrow-left</v-icon>
           Back
       </v-btn>
       <v-spacer/>
-      <v-toolbar-title class="secondary--text text-h5">{{user.name}}: {{user.balance | amountDisplay}}</v-toolbar-title>
+      <v-toolbar-title class="white--text text-h5">{{user.name}}: {{user.balance | amountDisplay}}</v-toolbar-title>
       <v-spacer/>
-      <v-btn icon>
+      <!-- <v-btn icon>
         <v-icon midium
           color="secondary"
           @click="isEditable = !isEditable">mdi-pencil</v-icon>
-      </v-btn>
-      <v-btn icon>
-        <v-icon midium
-          color="secondary"
-          @click="isAddItem = true">mdi-plus</v-icon>
+      </v-btn> -->
+      <v-switch
+        dense
+        :hide-details="true"
+        color="secondary"
+        v-model="isEditable"
+        prepend-icon="mdi-pencil"
+        class="mr-4"
+        />
+      <v-btn
+        icon
+        color="secondary"
+        @click="isAddItem = true">
+        <v-icon>mdi-plus</v-icon>
       </v-btn>
     </v-app-bar>
 

@@ -2,7 +2,7 @@
   <div class="user-select-page">
     <v-app-bar dense color="primary">
       <v-spacer/>
-      <v-toolbar-title>LIMU</v-toolbar-title>
+      <v-toolbar-title class="white--text text-h5">LIMU 喫茶注文システム</v-toolbar-title>
       <v-spacer/>
       <v-btn icon>
         <v-icon midium
@@ -15,6 +15,8 @@
           @click="showMonthlyPurchasedItems()">mdi-history</v-icon>
       </v-btn>
     </v-app-bar>
+
+    <!-- user cards -->
     <div class="main-content">
       <v-container>
         <v-row>

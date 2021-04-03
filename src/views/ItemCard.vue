@@ -1,21 +1,24 @@
 <template>
-  <v-card light @click="onClick" :ripple="!isEditable && !isPrefab">
+  <v-card
+    light
+    :loading="loading"
+    @click="onClick" :ripple="!isEditable && !isPrefab">
     <v-card-actions
-      class="pa-0"
+      class="py-0"
       :class="{secondary:item.enable, 'grey lighten-2':!item.enable}"
       v-if="isEditable">
+      <v-switch
+        inset dense
+        hide-details="true"
+        class="mx-0 my-0"
+        @change="state => $emit('switched', state)"
+        v-model="item.enable"/>
+      <v-spacer></v-spacer>
       <v-btn icon
         color="primary" class="ml-1"
         @click="isEditMode=!isEditMode">
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
-      <v-spacer></v-spacer>
-      <v-switch
-        inset dense
-        hide-details="true"
-        class="mr-0 mt-0"
-        @change="state => $emit('switched', state)"
-        v-model="item.enable"/>
     </v-card-actions>
 
     <v-img height="200" :src="isEditMode ? newItem.imageUrl : item.imageUrl">
@@ -76,6 +79,11 @@
         </v-toolbar-items>
       </v-toolbar>
     </v-form>
+
+    <!-- snackbar -->
+    <v-snackbar v-model="snackbar.show" :timeout="snackbar.duration">
+      {{ snackbar.text}}
+    </v-snackbar>
   </v-card>
 </template>
 
@@ -89,10 +97,16 @@ export default {
     return {
       isEditMode:false,
       thumbnailImage: null,
+      loading: false,
       newItem: {
         name: "",
         amount: "",
         imageUrl: ""
+      },
+      snackbar: {
+        show: false,
+        snackbarText: "",
+        duration: 1000
       },
       nameRules: [
         value => !!value || 'Required'
@@ -113,12 +127,15 @@ export default {
     },
     async finishEditMode () {
       if(!this.$refs.form.validate()){
+        this.showSnackBar("不正な入力です")
         return
       }
       if(!this.newItem.imageUrl){
+        this.showSnackBar("画像を選択してください")
         return
       }
 
+      this.loading = true
       this.item.name = this.newItem.name
       this.item.amount = this.newItem.amount
       if(this.thumbnailImage != null){
@@ -136,10 +153,14 @@ export default {
           // this.$set(this.items, item.id, item)
           this.$emit('created', this.item)
         })
+        this.showSnackBar("商品:"+this.item.name+" の追加が完了しました．")
       }
       else{
         await ItemManager.overwriteItem(this.item)
+        this.showSnackBar("商品:"+this.item.name+" の情報を変更しました．")
       }
+
+      this.loading = false
       this.isEditMode = false
       this.thumbnailImage = null
     },
@@ -159,6 +180,11 @@ export default {
     },
     selectImageFile() {
       this.$refs.input.click()
+    },
+    showSnackBar(message, duration=2000){
+      this.snackbar.text = message
+      this.snackbar.duration = duration
+      this.snackbar.show = true
     },
   },
   computed: {
