@@ -1,6 +1,5 @@
 <template>
-  <v-bottom-sheet inset :value="value" @input="v => $emit('input', v)">
-    <v-card>
+  <v-card>
     <v-toolbar flat max-height="80vh">
       <v-toolbar-title class="primary--text">{{user.name}}'s history</v-toolbar-title>
       <v-spacer/>
@@ -35,8 +34,7 @@
         </tr>
       </tbody>
     </v-simple-table>
-    </v-card>
-  </v-bottom-sheet>
+  </v-card>
 </template>
 
 <script>
@@ -55,7 +53,7 @@ export default {
       "items": {},
     }
   },
-  props: ['user', 'value'],
+  props: ['user'],
   mounted: function () {
     this.updateYearMonth()
     this.userHistory()

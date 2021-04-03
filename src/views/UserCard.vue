@@ -2,6 +2,7 @@
     <v-card
       light
       class="user-card pa-0"
+      :loading="loading"
       :style="{backgroundColor: user.color}"
       >
       <!-- action buttons -->
@@ -26,7 +27,7 @@
           dense
           filled
           hide-details="auto"
-          label="User Name"
+          label="名前"
           :rules="nameRules"
           v-model="newUser.name"/>
         <v-text-field
@@ -34,20 +35,20 @@
           dense
           filled
           hide-details="auto"
-          label="Balance"
-          :rules="nameRules"
+          label="残高"
+          :rules="amountRules"
           type="Number"
           v-model="newUser.balance"/>
         <v-chip-group column>
           <v-spacer/>
           <v-chip
             color="red lighten-1 white--text"
-            @click="newUser.balance += 5000">
+            @click="newUser.balance = parseInt(newUser.balance) + 5000">
             +5000
           </v-chip>
           <v-chip
             color="orange lighten-1 white--text"
-            @click="newUser.balance += 1000">
+            @click="newUser.balance = parseInt(newUser.balance) + 1000">
             +1000
           </v-chip>
         </v-chip-group>
@@ -91,7 +92,7 @@
 
       <!-- action buttons -->
       <v-divider class="my-0 mx-2"/>
-      <v-card-actions >
+      <v-card-actions v-show="!isPrefab">
         <v-spacer/>
         <v-btn icon small
           :color="getVisibleColor(colorTheme.tooltip)"
@@ -116,14 +117,6 @@
         <v-spacer/>
       </v-card-actions>
 
-      <!-- history -->
-      <history-modal :user="user" v-model="isShowHistory"/>
-
-      <!-- snackbar -->
-      <v-snackbar v-model="snackbar.show" :timeout="snackbar.duration">
-        {{ snackbar.text}}
-      </v-snackbar>
-
       <!-- color picker -->
       <v-expand-transition>
         <v-color-picker
@@ -136,10 +129,20 @@
           class="grey lighten-4"
           elevation="0"
           v-show="isColorSelectMode"
-          v-model="user.color"
-          @input="value=>onColorSelected(value)"
+          :value="user.color"
+          @input="color => onColorSelected(color)"
         />
       </v-expand-transition>
+
+      <!-- history -->
+      <v-bottom-sheet inset v-model="isShowHistory">
+        <history-modal :user="user"/>
+      </v-bottom-sheet>
+
+      <!-- snackbar -->
+      <v-snackbar v-model="snackbar.show" :timeout="snackbar.duration">
+        {{ snackbar.text}}
+      </v-snackbar>
     </v-card>
 </template>
 
@@ -158,6 +161,7 @@ export default {
     return {
       isColorSelectMode: false,
       isEdit: false,
+      loading: false,
       snackbar: {
         show: false,
         snackbarText: "",
@@ -173,6 +177,9 @@ export default {
       nameRules: [
         value => !!value || 'Required'
       ],
+      amountRules: [
+        value => typeof(value) != Number || '数値を入力してください',
+      ],
       colorTable: [
         ["#FD7665", "#9BFD89", "#6F74FD", "#5a5a5a"],
         ["#FAB472", "#95FAD2", "#D17EFA", "#9a9a9a"],
@@ -180,7 +187,7 @@ export default {
       ]
     }
   },
-  props: ["user", "isEditable"],
+  props: ["user", "isEditable", "isPrefab"],
   computed: {
     balanceSign () {
       return this.user.balance >= 0 ? '+¥' : '-¥'
@@ -188,6 +195,9 @@ export default {
   },
   mounted () {
     this.newUser =  Object.assign({}, this.user)
+    if(this.isPrefab){
+      this.isEdit = true
+    }
   },
   filters: {
     abs (val) {
@@ -200,9 +210,11 @@ export default {
       this.$emit("onClicked", this.user)
     },
     onColorSelected (color) {
-      console.log(color)
-      // this.user.color = color
-      // this.$emit("onUserDataChanged", this.user)
+      if(this.isPrefab) return
+      if(this.user.color === color) return
+
+      console.log('color selected:', color)
+      this.user.color = color
       this.updateUserDB(this.user)
       this.isColorSelectMode = false
     },
@@ -220,24 +232,40 @@ export default {
       this.snackbar.text = message
       this.snackbar.duration = duration
       this.snackbar.show = true
+
     },
     async finishEditMode () {
       if(!this.$refs.form.validate()){
         this.showSnackBar("不正な入力です")
         return
       }
-      if (this.user.balance != this.newUser.balance) {
+
+      this.loading = true
+      if (!this.isPrefab && this.user.balance != this.newUser.balance) {
         await this.addSetBalanceHistory(this.newUser.balance)
       }
       // this.user = Object.assign({}, this.newUser)
       this.user.name = this.newUser.name
       this.user.balance = this.newUser.balance
-      await this.updateUserDB(this.user)
-      this.showSnackBar("ユーザー:"+this.user.name+"の情報を変更しました")
+
+      if(this.isPrefab){
+        console.log("adding new user:", this.newUser)
+        const user = await UserManagerApi.UserManager.addUser(this.newUser)
+        this.newUser.id = user.id
+        this.user.id = user.id
+        this.$emit('created', this.user)
+      }
+      else{
+        await this.updateUserDB(this.user)
+        this.showSnackBar("ユーザー:"+this.user.name+"の情報を変更しました")
+      }
+
+      this.loading = false
       this.isEdit = false
     },
     cancelEditMode () {
       this.newUser = Object.assign({}, this.user)
+      this.$emit('cancelEdit')
       this.isEdit = false
     },
     async updateUserDB (newUser) {

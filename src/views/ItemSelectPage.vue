@@ -1,6 +1,6 @@
 <template>
   <div class="item-select-page">
-    <v-app-bar dense color="primary">
+    <v-app-bar dense fixed elevate-on-scroll color="primary">
       <v-btn
         elevation="0"
         outlined
@@ -34,7 +34,7 @@
       </v-btn>
     </v-app-bar>
 
-    <div class="main-content">
+    <div class="main-content mt-12">
       <!-- Favorite Items -->
       <div class="favorites-content section"
         v-if="favItems.length > 0">
@@ -97,6 +97,7 @@
         class="cart"
         v-if="isCartEnabled && cart.itemCount > 0"
         :cart="cart"
+        :loading="isPurchaseProcessing"
         :showSummary="true"
         @checkout="checkOut()"
         @close="cleanUpCart()"
@@ -107,7 +108,7 @@
       <v-overlay :value="isPurchaseCompleted">
         <v-card color="white" class="pa-1 text-center" width="300">
           <v-card-text class="primary--text text-h4 pb-0">支払い完了!</v-card-text>
-          <v-card-subtitle class="grey--text light-2 pt-0">{{ getNowString() }}</v-card-subtitle>
+          <v-card-subtitle class="grey--text light-2 pt-0">{{ getNowString() }}  {{ user.name }}</v-card-subtitle>
           <v-card-text class="pt-3 pb-0">
             <div class="amount-display">
               <h3 class="primary--text text-h3 my-0 mr-1">{{ getCartTotalValue() }}</h3>
@@ -166,6 +167,7 @@ export default {
       user: this.$route.params.user,
       isAddItem: false,
       isPurchaseCompleted: false,
+      isPurchaseProcessing: false,
       isEditable: false,
       newItem: {
         id: "",
@@ -242,39 +244,38 @@ export default {
       this.cleanUpCart()
       this.$router.push('/users')
     },
-    // setUploadImage: async function (file) {
-    //   this.uploadFile = file
-    // },
     billOrDepositMessage: function(amount){
       if (amount >= 0) {
         return "残高:"
       }
       return "支払い額:"
     },
-    checkOut: function () {
+    async checkOut () {
       console.log(this.cart)
       var totalValue = this.getCartTotalValue()
 
+      this.isPurchaseProcessing = true
       // update user's info
-      UserManagerApi.UserManager.getAllUsers().then((users) => {
-        this.user = users[this.user.id]
-        if(!this.user){
-          alert("sorry, this user has been deleted.")
-          this.$router.push({
-            name:"UserSelectView"
-          })
-        }
-        this.user.balance -= totalValue
-
-        // append history and get history id
-        HistoryManagerApi.HistoryManager.addPurchaseHistory(this.user, this.cart).then(() => {
-          UserManagerApi.UserManager.overwriteUser(this.user)
-          // show completed modal
-          this.isCartEnabled = false
-          this.isPurchaseCompleted = true
-          setTimeout(this.closePurchasedModal, 5000)
+      const users = await UserManagerApi.UserManager.getAllUsers()
+      this.user = users[this.user.id]
+      if(!this.user){
+        alert("sorry, this user has been deleted.")
+        this.isCartEnabled = false
+        this.isPurchaseProcessing = false
+        this.$router.push({
+          name:"UserSelectView"
         })
-      })
+      }
+      this.user.balance -= totalValue
+
+      await HistoryManagerApi.HistoryManager.addPurchaseHistory(this.user, this.cart)
+      await UserManagerApi.UserManager.overwriteUser(this.user)
+
+      // show completed modal
+      this.isCartEnabled = false
+      this.isPurchaseProcessing = false
+      this.isPurchaseCompleted = true
+      setTimeout(this.closePurchasedModal, 3000)
     },
     getCartTotalValue: function() {
       var sum = 0
@@ -331,6 +332,9 @@ export default {
       this.isCartEnabled = true
     },
     closePurchasedModal: function () {
+      if(!this.isPurchaseCompleted) {
+        return
+      }
       this.isPurchaseCompleted = false
       window.scrollTo({
         top:0,

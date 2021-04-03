@@ -20,12 +20,13 @@
     </v-system-bar>
 
     <v-toolbar color="white" dense flat>
-      <v-toolbar-title class="ml-9"> Total {{ cartTotalValue | amountDisplay }} </v-toolbar-title>
+      <v-toolbar-title class="ml-4">合計 {{cartTotalQuantity}} 商品</v-toolbar-title>
       <v-spacer/>
-
+      <v-toolbar-title class="mr-4">{{ cartTotalValue | amountDisplay }} </v-toolbar-title>
       <v-btn @click="onCheckoutClicked()"
         elevation="0"
         color="primary"
+        :loading="loading"
         >
         <v-icon left>mdi-cart</v-icon>
         checkout
@@ -71,7 +72,7 @@
 
 export default {
   name: "CartWindow",
-  props: ["cart", "showSummary"],
+  props: ["cart", "showSummary", "loading"],
   data: function () {
     return {
       isCartOpen: false
@@ -132,7 +133,12 @@ export default {
       return this.getCartTotalValue()
     },
     cartTotalQuantity: function () {
-      return this.getCartTotalQuantity()
+      let sum = 0
+      for(var itemName in this.cart.items){
+        var theItem = this.cart.items[itemName]
+        sum += theItem.quantity
+      }
+      return sum
     }
   },
   filters: {

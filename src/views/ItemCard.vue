@@ -22,6 +22,18 @@
     </v-card-actions>
 
     <v-img height="200" :src="isEditMode ? newItem.imageUrl : item.imageUrl">
+      <template v-slot:placeholder>
+        <v-row
+          class="fill-height ma-0"
+          align="center"
+          justify="center"
+        >
+          <v-progress-circular
+            indeterminate
+            color="grey lighten-1"
+          ></v-progress-circular>
+        </v-row>
+      </template>
       <div @click="selectImageFile()" v-show="isEditMode">
         <v-overlay absolute :value="isEditMode">
           <v-icon x-large>mdi-camera</v-icon>
@@ -55,7 +67,7 @@
         dense
         filled
         hide-details="auto"
-        label="Item Name"
+        label="商品名"
         :rules="nameRules"
         v-model="newItem.name"/>
       <v-text-field
@@ -63,7 +75,7 @@
         dense
         filled
         hide-details="auto"
-        label="Value"
+        label="価格"
         :rules="nameRules"
         type="Number"
         v-model="newItem.amount"/>
@@ -113,7 +125,7 @@ export default {
       ],
     }
   },
-  props: ["item", "user", "isEditable", "isPrefab", "count"],
+  props: ["item", "user", "isEditable", "isPrefab"],
   mounted () {
     this.newItem = Object.assign({}, this.item)
     if(this.isPrefab) {
@@ -153,7 +165,6 @@ export default {
           // this.$set(this.items, item.id, item)
           this.$emit('created', this.item)
         })
-        this.showSnackBar("商品:"+this.item.name+" の追加が完了しました．")
       }
       else{
         await ItemManager.overwriteItem(this.item)

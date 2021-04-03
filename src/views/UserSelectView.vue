@@ -1,6 +1,11 @@
 <template>
   <div class="user-select-page">
-    <v-app-bar dense color="primary">
+    <v-app-bar dense elevate-on-scroll fixed color="primary">
+      <v-btn icon>
+        <v-icon midium
+          color="secondary"
+          @click="showMonthlyPurchasedItems()">mdi-history</v-icon>
+      </v-btn>
       <v-spacer/>
       <v-toolbar-title class="white--text text-h5">LIMU 喫茶注文システム</v-toolbar-title>
       <v-spacer/>
@@ -12,13 +17,16 @@
       <v-btn icon>
         <v-icon midium
           color="secondary"
-          @click="showMonthlyPurchasedItems()">mdi-history</v-icon>
+          @click="isAddUser = true">mdi-plus</v-icon>
       </v-btn>
     </v-app-bar>
 
     <!-- user cards -->
-    <div class="main-content">
+    <div class="main-content mt-12">
       <v-container>
+        <v-progress-circular indeterminate
+          class="my-12"
+          v-show="loading"/>
         <v-row>
           <v-col
             cols="12"
@@ -41,51 +49,18 @@
         </v-row>
       </v-container>
 
-      <!-- Colored FAB button with ripple -->
-      <button
-        class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored"
-        @click="isAddUser = true"
-      >
-        <i class="material-icons">add</i>
-      </button>
-
       <items-history v-model="showItemsHistory">
       </items-history>
 
-      <modal class="adduser-modal" v-if="isAddUser" @close="endAddUser()">
-        <div class="adduser-modal-content">
-          <h3>Add User</h3>
-          <hr>
-          <div class="adduser-field">
-            <div class="adduser-field-name">
-              <!-- <p>Your name:</p> -->
-              <input type="text" placeholder="User name" v-model="newUser.name">
-            </div>
-            <div class="adduser-buttons">
-              <div class="adduser-buttons-content">
-                <toolbar-icon
-                  class="button-ellipse cancel"
-                  @click="endAddUser()"
-                  :iconSize="32"
-                  :padding="4"
-                  :borderRadius="4"
-                  >
-                  cancel
-                </toolbar-icon>
-                <toolbar-icon
-                  class="button-ellipse check"
-                  @click="addNewUser()"
-                  :iconSize="32"
-                  :padding="4"
-                  :borderRadius="4"
-                  >
-                  done
-                </toolbar-icon>
-              </div>
-            </div>
-          </div>
+      <v-overlay :value="isAddUser" light>
+        <div :style="{width: '250px'}">
+          <user-card
+            :user="newUser"
+            :isPrefab="true"
+            @created="user => addNewUser(user)"
+            @cancelEdit="endAddUser()"/>
         </div>
-      </modal>
+      </v-overlay>
     </div>
   </div>
 </template>
@@ -108,10 +83,11 @@ export default {
       users: {},
       isAddUser: false,
       showItemsHistory: false,
+      loading: false,
       newUser: {
         name: "",
         balance: 0,
-        color: "white",
+        color: "FFFFFF",
         enable: true
       },
       infoData: {
@@ -125,18 +101,17 @@ export default {
     }
   },
   async mounted() {
+    this.loading = true
     this.adminuser = await AdminAuth.Auth.loginWithGoogle()
     this.getAllUsers()
     this.getNewsInfo()
+
+    this.loading = false
   },
   methods: {
-    getAllUsers: function () {
-      UserManagerApi.UserManager.getAllUsers().then(
-        (users) => {
-          this.users = users
-          console.log('all users:', this.users)
-        }
-      )
+     async getAllUsers () {
+      this.users = await UserManagerApi.UserManager.getAllUsers()
+      console.log("all users:", this.users)
     },
     getNewsInfo: function () {
       const firestore = firebase.firestore()
@@ -160,19 +135,17 @@ export default {
 
       window.open(this.infoData.url, "_blank")
     },
-    addNewUser: function () {
-      UserManagerApi.UserManager.addUser(this.newUser).then(
-        (users) => {
-          this.updateUsers(users)
-        }
-      )
+    addNewUser: function (user) {
+      console.log('adding user:', user)
+      // this.$set(this.users, user.id, user)
+      this.getAllUsers()
       this.endAddUser()
     },
     endAddUser: function () {
       this.newUser = {
         name: "",
         balance: 0,
-        color: "white",
+        color: "FFFFFF",
         enable: true
       }
       this.isAddUser = false
@@ -181,10 +154,6 @@ export default {
       var users = UserManagerApi.UserManager.unableUser(user)
       this.updateUsers(users)
       // this.users.remove(user)
-    },
-    onEditMode: function (user) {
-      this.newUser = user
-      this.isAddUser = true
     },
     updateUsers: function (users) {
       this.users = {}
@@ -205,18 +174,6 @@ export default {
     }
   },
   computed: {
-    enableUsers() {
-      if(this.isEditable) {
-        return this.users
-      }
-      const users = this.users
-      return Object.keys(users)
-                  .filter((id) => users[id].enable)
-                  .reduce((result, id) => {
-                    result[id] = users[id]
-                    return result
-                  }, {})
-    }
   }
 }
 
