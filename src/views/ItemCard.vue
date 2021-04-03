@@ -54,16 +54,27 @@
     </div>
 
     <!-- edit form -->
-    <v-form ref="form" v-else class="px-2 pt-2">
-      <!-- 非表示のfileインプット -->
+    <v-form ref="form" v-else class="px-2 pt-0">
+      <!-- ヘッダ部分クリックで作動する，非表示のfileインプット -->
       <input
         type="file"
         style="display:none"
         ref="input"
         accept="image/jpeg, image/jpg, image/png"
-        @change="e => onSelectImage(e)"/>
-
+        @change="e => onSelectImage(e.target.files[0])"/>
       <v-text-field
+        class="pt-4"
+        dense
+        hide-details="auto"
+        label="画像URL"
+        append-icon="mdi-cloud-upload"
+        v-model="newItem.imageUrl"
+        :rules="nameRules"
+        @click:append="$refs.input.click()"
+        />
+      <v-divider v-show="isEditMode"/>
+      <v-text-field
+        class="mt-2"
         dense
         filled
         hide-details="auto"
@@ -150,13 +161,7 @@ export default {
       this.loading = true
       this.item.name = this.newItem.name
       this.item.amount = this.newItem.amount
-      if(this.thumbnailImage != null){
-        console.log("update thumbnail image:", this.thumbnailImage)
-        await UploaderApi.Uploader.uploadImageFile(this.thumbnailImage, "itemImages", null).then(value => {
-          this.newItem.imageUrl = value['url']
-          this.item.imageUrl = value['url']
-        })
-      }
+      this.item.imageUrl = this.newItem.imageUrl
       if(this.isPrefab){
         await ItemManager.addItem(this.newItem).then(item => {
           console.log("new item:", item)
@@ -181,12 +186,15 @@ export default {
       this.thumbnailImage = null
       this.$emit('cancelEdit')
     },
-    onSelectImage(e) {
-      const file = e.target.files[0]
-      console.log('selected local image:', file)
-      const localURL = window.URL.createObjectURL(file)
-      console.log(' > URL', localURL)
-      this.newItem.imageUrl = localURL
+    async onSelectImage(file) {
+      if(!file) {
+        return
+      }
+      this.loading = true
+      const storageInfo = await UploaderApi.Uploader.uploadImageFile(file, "itemImages", null)
+      this.newItem.imageUrl = storageInfo['url']
+      console.log(' > URL', this.newItem.imageUrl)
+      this.loading = false
       this.thumbnailImage = file
     },
     selectImageFile() {
