@@ -8,6 +8,7 @@ class UserManagerApi {
     this.database = firebase.firestore();
     this.usersCollection = this.database.collection('users');
     this.userFavItems = {};
+    this.users = {}
   }
 
   async getAllUsers() {
