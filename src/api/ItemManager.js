@@ -4,7 +4,9 @@ class ItemManagerApi {
   constructor() {
     this.database = firebase.firestore();
     this.itemsCollection = this.database.collection('items');
+    this.categoriesCollection = this.database.collection('categories');
     this.lastUpdateTime = null;
+    this.categories = {}
   }
 
   async getAllItems(forceReload=false) {
@@ -33,7 +35,21 @@ class ItemManagerApi {
         this.lastUpdateTime = new Date(Date.now());
       }
     );
+    await this.getAllCategories()
     return this.items;
+  }
+
+  async getAllCategories() {
+    await this.categoriesCollection.get().then(
+      snapshots => {
+        snapshots.forEach(cat => {
+          const data = cat.data()
+          const id = cat.id
+          this.categories[id] = data
+        })
+      }
+    )
+    console.log('all categories:', Object.keys(this.categories))
   }
 
   async addItem(item) {

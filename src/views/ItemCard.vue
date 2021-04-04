@@ -2,7 +2,7 @@
   <v-card
     light
     :loading="loading"
-    @click="onClick" :ripple="!isEditable && !isPrefab">
+    @click="onClick()" :ripple="!isEditable && !isPrefab">
     <v-card-actions
       class="py-0"
       :class="{secondary:item.enable, 'grey lighten-2':!item.enable}"
@@ -42,10 +42,14 @@
     </v-img>
 
     <!-- Item Summary -->
-    <div v-if="!isEditMode">
-      <v-card-title class="grey--text text-h5 px-3 pt-3 pb-0">{{ item.name }}</v-card-title>
-      <!-- <v-card-subtitle>a</v-card-subtitle> -->
-      <v-card-text class="primary--text text-h5 px-3 pb-3">
+    <div v-if="!isEditMode && !isPrefab">
+      <v-chip-group column class="py-0 px-2">
+        <v-chip small outlined :ripple="false"
+          v-if="category!=undefined"
+          :color="category.color">{{ category.name }}</v-chip>
+      </v-chip-group>
+      <v-card-title class="grey--text text-h5 px-3 pt-0 pb-0">{{ item.name }}</v-card-title>
+      <v-card-text class="primary--text text-h5 px-3 pb-3 pt-3">
         <div class="amount-display">
           <p class="primary--text text-h5">¥</p>
           <h3 class="primary--text text-h4 ma-0 ml-1">{{ item.amount }}</h3>
@@ -82,7 +86,6 @@
         :rules="nameRules"
         v-model="newItem.name"/>
       <v-text-field
-        class="mt-2"
         dense
         filled
         hide-details="auto"
@@ -90,6 +93,12 @@
         :rules="nameRules"
         type="Number"
         v-model="newItem.amount"/>
+      <v-select filled dense
+        v-model="newItem.category"
+        :items='categoriesList'
+        label="カテゴリー"
+        >
+      </v-select>
       <v-toolbar flat dense>
         <v-spacer/>
         <v-toolbar-items>
@@ -124,7 +133,8 @@ export default {
       newItem: {
         name: "",
         amount: "",
-        imageUrl: ""
+        imageUrl: "",
+        category: ""
       },
       snackbar: {
         show: false,
@@ -136,7 +146,7 @@ export default {
       ],
     }
   },
-  props: ["item", "user", "isEditable", "isPrefab"],
+  props: ["item", "user", "isEditable", "isPrefab", "categories"],
   mounted () {
     this.newItem = Object.assign({}, this.item)
     if(this.isPrefab) {
@@ -146,7 +156,7 @@ export default {
   methods: {
     onClick: function() {
       if (this.isEditable) return
-      this.$emit("selected", this.item)
+      this.$emit("click", this.item)
     },
     async finishEditMode () {
       if(!this.$refs.form.validate()){
@@ -162,6 +172,7 @@ export default {
       this.item.name = this.newItem.name
       this.item.amount = this.newItem.amount
       this.item.imageUrl = this.newItem.imageUrl
+      this.item.category = this.newItem.category
       if(this.isPrefab){
         await ItemManager.addItem(this.newItem).then(item => {
           console.log("new item:", item)
@@ -207,6 +218,19 @@ export default {
     },
   },
   computed: {
+    categoriesList() {
+      return Object.values(this.categories).map(value =>
+        {
+          return {
+            text: value.name,
+            value: value.id
+          }
+        }
+      )
+    },
+    category() {
+      return this.categories[this.item.category]
+    }
   }
 }
 

@@ -47,7 +47,7 @@
               :isEditable="isEditable"
               @onUserDataChanged="(user) => overwriteUser(user)"
               @remove="(user) => removeUser(user)"
-              @onClicked="(user) => goItemSelectPage(user)"
+              @click="(user) => goItemSelectPage(user)"
             />
           </v-col>
         </v-row>
@@ -74,11 +74,8 @@ import Vue from "vue"
 import UserCard from "./UserCard"
 import UserManagerApi from "@/api/UserManager"
 import AdminAuth from "@/api/AdminAuth"
-import Header from "../components/Header"
-import Modal from "../components/Modal"
-import Icon from "../components/Icon"
 import firebase from "../firebase"
-import PurchasedItemsModal from "./PurchasedItemsModal"
+import ItemHistoryView from "./ItemHistoryView"
 
 export default {
   name: "UserSelectPage",
@@ -190,69 +187,12 @@ export default {
 }
 
 Vue.component("user-card", UserCard)
-Vue.component("users-header", Header)
-Vue.component("modal", Modal)
-Vue.component("toolbar-icon", Icon)
-Vue.component("items-history", PurchasedItemsModal)
+Vue.component("items-history", ItemHistoryView)
 </script>
 
 <style lang="sass" scoped>
 
-.header
-  height: 54px
-
-  &-infobar
-    background-color: #fcfcfc
-    height: 48px
-    display: flex
-    flex-direction: row
-    background-color: #ff4081
-
-    &-icon-content
-      display: flex
-      width: 6%
-      color: #fcfcfc
-      z-index: 1
-      box-shadow: 0px 0 7px 0px #00000052
-
-    &-icon
-      margin: auto
-
-    &-messagebox
-      margin: 0
-      width: 100%
-      max-width: 100%
-      background-color: #f3f3f3
-      display: flex
-      padding: 0 10px
-
-    &-message
-      font-family: 'Nunito', 'M PLUS Rounded 1c', sans-serif
-      font-size: 20px
-      line-height: 22px
-      margin: auto 0
-      max-width: 100%
-      overflow: hidden
-
-  &-toolbar
-    display: flex
-    flex-direction: row
-    margin: auto 10px auto 10px
-
-    &-button
-      margin: auto 2px
-
-      &-icon
-        border: 2px solid
-
-.mdl-button
-  position: fixed
-  right: 10%
-  bottom: 10%
-  z-index: 10
-
 .main-content
-  // padding-top: 54px
   width: 100vw
   min-height: 100vh
   background-color: rgb(252,252,252)
@@ -261,75 +201,4 @@ Vue.component("items-history", PurchasedItemsModal)
   min-height: 100vh
   height: max-content
 
-.adduser-modal
-  display: flex
-  flex-direction: column
-
-  h3
-    font-family: 'Nunito', 'M PLUS Rounded 1c', sans-serif
-    font-size: 28px
-    margin: 6px auto
-    font-weight: 400
-
-  p
-    font-family: 'Nunito', 'M PLUS Rounded 1c', sans-serif
-    font-size: 18px
-    line-height: 20px
-    margin: 0
-    margin-right: 10px
-
-  &-content
-    padding: 10px 20px
-
-  .adduser-field
-    .adduser-field-name
-      align-content: right
-      display: flex
-      flex-direction: row
-      margin: 20px 0
-
-    .adduser-field-balance
-      display: flex
-      flex-direction: row
-      margin: 20px 0
-
-    input
-      max-width: 100%
-      -webkit-box-sizing: border-box
-      box-sizing: border-box
-      border: 1px solid rgba(105, 105, 105, 0.6)
-      border-radius: 4px
-      background-color: rgba(250, 250, 250, 0.8)
-      padding: 8px 10px
-
-      font-size: 26px
-      line-height: 28px
-      margin: 8px auto
-      font-weight: 400
-
-    .adduser-buttons
-      margin-top: 6px
-      display: flex
-      flex-direction: row-reverse
-      &-content
-        display: flex
-        flex-direction: row
-        border-radius: 14px
-        border: none
-        width: max-content
-        padding: 4px 8px
-        background-color: rgba(250, 250, 250, 1)
-
-      .button-ellipse
-        margin: 0 2px
-
-        &.cancel
-          color: #ff3f81
-
-        &.check
-          color: #7af721
-
-  .adduser-button
-    width: 100px
-    height: 30px
 </style>

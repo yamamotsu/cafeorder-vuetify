@@ -8,8 +8,8 @@ console.log(firebase)
 firebase.initializeApp(firebaseConfig.config)
 
 if(location.hostname === 'localhost'){
-  firebase.firestore().useEmulator("localhost", 8080)
-  firebase.auth().useEmulator("http://localhost:9099")
+  // firebase.firestore().useEmulator("localhost", 8080)
+  // firebase.auth().useEmulator("http://localhost:9099")
 }
 
 export default firebase

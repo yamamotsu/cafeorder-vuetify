@@ -10,8 +10,9 @@
       <v-btn icon @click="onRightArrowClicked()" :disabled="year == now.getFullYear() && month-1 == now.getMonth()">
         <v-icon>mdi-chevron-right</v-icon>
       </v-btn>
-
     </v-toolbar>
+
+    <v-progress-linear indeterminate v-show="loading"/>
     <v-simple-table fixed-header height="80vh">
       <thead>
         <tr>
@@ -45,19 +46,22 @@ import ItemManager from "@/api/ItemManager"
 export default {
   data: function () {
     return {
-      "year": 0,
-      "month": 1,
-      "date": this.getThisMonth(),
-      "now": this.getThisMonth(),
-      "history": [],
-      "items": {},
+      year: 0,
+      month: 1,
+      date: this.getThisMonth(),
+      now: this.getThisMonth(),
+      history: [],
+      items: {},
+      loading: false,
     }
   },
   props: ['user'],
-  mounted: function () {
+  async mounted () {
+    this.loading = true
     this.updateYearMonth()
-    this.userHistory()
-    ItemManager.getAllItems().then((items) => {this.items = items})
+    this.items = await ItemManager.getAllItems()
+    await this.userHistory()
+    this.loading = false
   },
   methods: {
     onRightArrowClicked() {
@@ -74,10 +78,11 @@ export default {
       this.updateYearMonth()
       this.userHistory()
     },
-    userHistory() {
+    async userHistory() {
+      this.loading = true
       let date_to = new Date(this.date)
       date_to.setMonth(this.date.getMonth()+1)
-      HistoryManagerApi.HistoryManager.getUsersMonthHistory(
+      await HistoryManagerApi.HistoryManager.getUsersMonthHistory(
         this.user,
         this.date,
         date_to
@@ -87,6 +92,7 @@ export default {
           this.updateItemHistory(history)
         }
       )
+      this.loading = false
     },
     getThisMonth() {
       let now = new Date(Date.now())

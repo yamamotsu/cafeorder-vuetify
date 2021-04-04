@@ -48,7 +48,8 @@
                   :item="card"
                   :user="user"
                   :isEditable="isEditable"
-                  @selected = "(item) => addItemToCart(item)"
+                  :categories="categories"
+                  @click="(item) => addItemToCart(item)"
                   @switched="(enable) => setEnableItem(card, enable)"
                 />
             </v-col>
@@ -58,22 +59,31 @@
 
       <!-- All Item Cards -->
       <div class="section">
-        <div class="section-title">
-          <h3>All items</h3>
-        </div>
+          <h3 class="section-title my-0">All items</h3>
+          <v-chip-group multiple
+            class="mx-3"
+            v-model="categoryFilter">
+            <v-spacer/>
+            <v-chip filter outlined
+              :disabled="isEditable"
+              v-for="category in categories" :key="category.id"
+              :color="category.color"
+              :value="category.id">{{category.name}}</v-chip>
+          </v-chip-group>
         <v-container>
           <v-row>
             <v-col
               cols="12" sm="3" md="3" lg="2"
               class="pa-2"
               v-for="card in sortedItems"
-              v-show="card.enable || isEditable"
+              v-show="isVisibleItem(card) || isEditable"
               :key="card.id">
               <item-card
                 :item="card"
                 :user="user"
                 :isEditable="isEditable"
-                @selected="(item) => addItemToCart(item)"
+                :categories="categories"
+                @click="(item) => addItemToCart(item)"
                 @switched="(enable) => setEnableItem(card, enable)"
               />
             </v-col>
@@ -106,8 +116,8 @@
           </v-card-text>
           <v-card-text class="pt-3 pb-8">
             <div class="amount-display">
-              <p class="grey--text light-1">{{ billOrDepositMessage(user.balance) }}</p>
-              <h5 class="grey--text my-0 mx-1">{{ user.balance | absAmountDisplay }}</h5>
+              <p class="grey--text light-1">{{ user.balance | billOrDepositMessage }}</p>
+              <h5 class="grey--text my-0 mx-1">{{ user.balance | abs }}</h5>
               <p class="grey--text">円</p>
             </div>
           </v-card-text>
@@ -121,12 +131,13 @@
 
       <!-- new item overlay -->
       <v-overlay :value="isAddItem" light>
-        <div :style="{width: '250px'}">
+        <div :style="{width: '300px'}">
           <item-card
             :item="newItem"
             :user="user"
             :isEditable="false"
             :isPrefab="true"
+            :categories="categories"
             @created="item => addNewItem(item)"
             @cancelEdit="endAddItem()"
           />
@@ -142,9 +153,10 @@ import ItemManager from "@/api/ItemManager"
 import UserManagerApi from "@/api/UserManager"
 import HistoryManagerApi from "@/api/HistoryManager"
 import AdminAuth from "@/api/AdminAuth"
-import Modal from "../components/Modal"
 import CartWindow from "./CartWindow"
 import ItemCard from "./ItemCard"
+Vue.component("cart", CartWindow)
+Vue.component("item-card", ItemCard)
 
 export default {
   name: "ItemSelectPage",
@@ -152,15 +164,18 @@ export default {
     return {
       items: {},
       favItems: [],
-      isCartEnabled: false,
       user: this.$route.params.user,
+      isCartEnabled: false,
       isAddItem: false,
       isPurchaseCompleted: false,
       isPurchaseProcessing: false,
       isEditable: false,
+      categories: {},
+      categoryFilter: [],
       newItem: {
         id: "",
         name: "",
+        category: "3",
         amount: 100,
         stocks: 0,
         imageUrl: "",
@@ -192,20 +207,30 @@ export default {
       }
       return "-¥" + -1*amount
     },
-    absAmountDisplay: function(amount) {
+    abs: function(amount) {
+      return Math.abs(amount)
+    },
+    billOrDepositMessage: function(amount){
       if (amount >= 0) {
-        return amount
+        return "残高:"
       }
-      return -1*amount
-    }
+      return "支払い額:"
+    },
   },
   methods: {
     getAllItems: async function () {
       this.items = await ItemManager.getAllItems(false)
+      this.categories = ItemManager.categories
+      // this.categoryFilter = Object.keys(this.categories)
     },
     addNewItem: async function (item) {
       this.$set(this.items, item.id, item)
       this.endAddItem()
+    },
+    isVisibleItem(item){
+      if(!item.enable) return false
+      if(this.categoryFilter.length == 0) return true
+      return this.categoryFilter.includes(item.category?.toString())
     },
     setEnableItem (item, enable){
       // console.log(enable)
@@ -217,6 +242,7 @@ export default {
         name: "",
         id: "",
         amount: 100,
+        category: "3",
         stocks: 0,
         imageUrl: "",
         enable:true
@@ -226,12 +252,6 @@ export default {
     backToUserPage: function () {
       this.cleanUpCart()
       this.$router.push('/users')
-    },
-    billOrDepositMessage: function(amount){
-      if (amount >= 0) {
-        return "残高:"
-      }
-      return "支払い額:"
     },
     async checkOut () {
       console.log(this.cart)
@@ -351,9 +371,6 @@ export default {
   }
 }
 
-Vue.component("modal", Modal)
-Vue.component("cart", CartWindow)
-Vue.component("item-card", ItemCard)
 </script>
 
 <style lang="sass" scoped>
@@ -386,7 +403,7 @@ Vue.component("item-card", ItemCard)
       line-height: 34px
 
 .favorites-content
-  margin-bottom: 28px
+  margin-bottom: 0px
   background-color: #fff8de
 
 .user-select-page

@@ -20,7 +20,7 @@
     </v-system-bar>
 
     <v-toolbar color="white" dense flat>
-      <v-toolbar-title class="ml-4">合計 {{cartTotalQuantity}} 商品</v-toolbar-title>
+      <v-toolbar-title class="ml-4">{{cartTotalQuantity | itemCountDisplay}}</v-toolbar-title>
       <v-spacer/>
       <v-toolbar-title class="mr-4">{{ cartTotalValue | amountDisplay }} </v-toolbar-title>
       <v-btn @click="onCheckoutClicked()"
@@ -148,14 +148,14 @@ export default {
     itemCountDisplay: function(itemCount) {
       if(itemCount <= 0)
       {
-        return "no items selected"
+        return ""
       }
       else if(itemCount == 1)
       {
-        return itemCount + " item"
+        return "合計" + itemCount + " 商品"
       }
       else {
-        return itemCount + " items"
+        return "合計" + itemCount + " 商品"
       }
     }
   }
@@ -164,14 +164,4 @@ export default {
 </script>
 
 <style lang="sass" scoped>
-
-.cart
-  // width: 100%
-  display: block
-  // border: solid 1px #2c3e50
-  border-radius: 2px
-  font-size: 24px
-  font-family: 'Nunito', 'M PLUS Rounded 1c', sans-serif
-  color: #2c3e50
-
 </style>

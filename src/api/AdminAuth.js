@@ -9,25 +9,16 @@ class AdminAuth {
     // ログイン済みの場合そのままuserを返す
     if (firebase.auth().currentUser) {
       this.user = firebase.auth().currentUser
-      console.log('auth info:', this.user)
       return this.user
     }
     const result = await firebase.auth().getRedirectResult()
     if (result.credential) {
       this.user = result.user
-      console.log('auth info:', this.user)
       return this.user
     } else {
       console.log('redirecting to sign-in page')
       return firebase.auth().signInWithRedirect(new firebase.auth.GoogleAuthProvider())
     }
-    // await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(function (result) {
-    //   // This gives you a Google Access Token. You can use it to access the Google API.
-    //   // var token = result.credential.accessToken;
-    //   // The signed-in user info.
-    //   this.user = result.user;
-    //   return this.user;
-    // });
   }
 
   async logout () {

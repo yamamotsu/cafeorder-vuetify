@@ -73,7 +73,7 @@
       <div
         class="summary py-8 px-0"
         v-else
-        @click="onClick">
+        @click="$emit('click', user)">
         <v-card-text class="text-center text-h4 px-0 py-0"
           :style="{'color':getVisibleColor(colorTheme.name)}"
           v-text="user.name"/>
@@ -137,7 +137,7 @@
 
       <!-- history -->
       <v-bottom-sheet inset v-model="isShowHistory">
-        <history-modal :user="user"/>
+        <history :user="user"/>
       </v-bottom-sheet>
 
       <!-- snackbar -->
@@ -150,11 +150,12 @@
 <script>
 import Vue from "vue"
 import ColorUtil from "../api/Colors"
-import ColorPallet from "../components/ColorPallet"
 import colors from 'vuetify/lib/util/colors'
 import HistoryManagerApi from "../api/HistoryManager"
 import UserManagerApi from "../api/UserManager"
-import HistoryView from "./HistoryModal"
+import HistoryView from "./UserHistoryView"
+
+Vue.component("history", HistoryView)
 
 export default {
   name: "UserCard",
@@ -206,10 +207,6 @@ export default {
     }
   },
   methods: {
-    onClick () {
-      // console.log("this user:"+this.user.name)
-      this.$emit("onClicked", this.user)
-    },
     onColorSelected (color) {
       if(this.isPrefab) return
       if(this.user.color === color) return
@@ -233,7 +230,6 @@ export default {
       this.snackbar.text = message
       this.snackbar.duration = duration
       this.snackbar.show = true
-
     },
     async finishEditMode () {
       if(!this.$refs.form.validate()){
@@ -283,8 +279,6 @@ export default {
   }
 }
 
-Vue.component("color-pallet", ColorPallet)
-Vue.component("history-modal", HistoryView)
 </script>
 
 <style lang="sass" scoped>
