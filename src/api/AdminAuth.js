@@ -1,4 +1,5 @@
 import firebase from '../firebase'
+import config from '../config'
 
 class AdminAuth {
   constructor () {
@@ -6,6 +7,10 @@ class AdminAuth {
   }
 
   async loginWithGoogle () {
+    if(config.ignoreAdmin) {
+      console.warn("`config.ignoreAdmin` is set to true. DONT SET THIS FOR PRODUCTION VERSION.")
+      return
+    }
     // ログイン済みの場合そのままuserを返す
     if (firebase.auth().currentUser) {
       this.user = firebase.auth().currentUser
@@ -22,6 +27,7 @@ class AdminAuth {
   }
 
   async logout () {
+    if(config.ignoreAdmin) return
     await firebase.auth().signOut()
     this.user = null
     return null

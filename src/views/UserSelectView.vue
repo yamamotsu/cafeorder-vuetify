@@ -7,7 +7,7 @@
           @click="showMonthlyPurchasedItems()">mdi-history</v-icon>
       </v-btn>
       <v-spacer/>
-      <v-toolbar-title class="white--text text-h5">LIMU 喫茶注文システム</v-toolbar-title>
+      <v-toolbar-title class="white--text text-h5">{{title}}</v-toolbar-title>
       <v-spacer/>
       <v-switch
         dense
@@ -70,6 +70,7 @@
 </template>
 
 <script>
+import config from "../config"
 import Vue from "vue"
 import UserCard from "./UserCard"
 import UserManagerApi from "@/api/UserManager"
@@ -99,6 +100,7 @@ export default {
       },
       isShowInfo: false,
       isEditable: false,
+      title: config.appTitle
     }
   },
   async mounted() {
