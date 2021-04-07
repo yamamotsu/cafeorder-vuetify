@@ -33,7 +33,7 @@
           v-show="loading"/>
         <v-row>
           <v-col
-            cols="12"
+            cols="6"
             sm="3"
             md="3"
             lg="2"
@@ -106,6 +106,7 @@ export default {
   async mounted() {
     this.loading = true
     this.adminuser = await AdminAuth.Auth.loginWithGoogle()
+    console.log('admin user:', this.adminuser)
     this.getAllUsers()
     this.getNewsInfo()
 
@@ -120,8 +121,9 @@ export default {
       const firestore = firebase.firestore()
       firestore.collection("system").doc("news").get().then(snapshot => {
         this.infoData = snapshot.data()
-        if (!("enable" in this.infoData)) {return}
-        if (this.infoData["enable"] == false) {return}
+        if (!this.infoData) { return }
+        if (!("enable" in this.infoData)) { return }
+        if (this.infoData["enable"] == false) { return }
 
         const infoDate = this.infoData.timestamp.toDate()
         let date5ago = new Date(Date.now())

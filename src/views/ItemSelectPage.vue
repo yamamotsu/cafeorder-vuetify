@@ -39,7 +39,7 @@
         <v-container>
           <v-row>
             <v-col
-              cols="12" sm="3" md="3" lg="2"
+              cols="6" sm="3" md="3" lg="2"
               class="pa-2"
               v-for="card in favItems"
               v-show="card.enable || isEditable"
@@ -73,7 +73,7 @@
         <v-container>
           <v-row>
             <v-col
-              cols="12" sm="3" md="3" lg="2"
+              cols="6" sm="3" md="3" lg="2"
               class="pa-2"
               v-for="card in sortedItems"
               v-show="isVisibleItem(card) || isEditable"

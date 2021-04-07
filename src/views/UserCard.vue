@@ -181,6 +181,7 @@ export default {
       ],
       amountRules: [
         value => typeof(value) != Number || '数値を入力してください',
+        value => !!value || 'Required'
       ],
       colorTable: [
         ["#FD7665", "#9BFD89", "#6F74FD", "#5a5a5a"],
