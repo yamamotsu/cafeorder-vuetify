@@ -1,4 +1,4 @@
 export default {
-    ignoreAdmin: true,
+    ignoreAdmin: false,
     appTitle: "CafeOrder Demo", // LIMU 喫茶注文システム
 }

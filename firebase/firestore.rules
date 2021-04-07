@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+ 		function isSignedIn() {
+      return request.auth != null;
+    }
+    function isVerifiedAccount() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles/$(request.auth.uid));
+    }
+    function getRole() {
+      return get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role;
+    }
+
+    match /{document=**} {
+      allow read, write: if isVerifiedAccount() && getRole() == "admin";
+    }
+
+    match /users/{user} {
+    	function isOwnedUser(rsc) {
+      	return "owner" in rsc.data && rsc.data.owner == request.auth.uid;
+      }
+    	allow read, write: if isVerifiedAccount() && isOwnedUser(resource);
+    }
+
+    match /items/{item} {
+    	allow read: if isVerifiedAccount();
+    }
+  }
+}

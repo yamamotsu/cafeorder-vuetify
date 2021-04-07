@@ -5,6 +5,11 @@
 yarn install
 ```
 
+### Start Firebase local emulator
+```
+sh start_emulator.sh
+```
+
 ### Compiles and hot-reloads for development
 ```
 yarn serve
