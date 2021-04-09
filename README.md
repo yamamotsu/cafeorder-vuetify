@@ -118,3 +118,6 @@ yarn lint
 - プロジェクト初期化時に対応できるように存在しないコレクションを初期化する処理
 - 商品在庫表示
 - 全体のトランザクション履歴表示
+- SPA
+- Card color theme
+- Multi language support

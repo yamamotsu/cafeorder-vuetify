@@ -73,6 +73,7 @@
       <div
         class="summary py-8 px-0"
         v-else
+        v-ripple
         @click="$emit('click', user)">
         <v-card-text class="text-center text-h4 px-0 py-0"
           :style="{'color':getVisibleColor(colorTheme.name)}"
@@ -93,7 +94,7 @@
 
       <!-- action buttons -->
       <v-divider class="my-0 mx-2"/>
-      <v-card-actions v-show="!isPrefab">
+      <v-card-actions v-show="!isPrefab" @click="e => {e.preventDefault()}">
         <v-spacer/>
         <v-btn icon small
           :color="getVisibleColor(colorTheme.tooltip)"

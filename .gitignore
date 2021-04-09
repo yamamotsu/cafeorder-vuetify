@@ -2,7 +2,6 @@
 node_modules
 /dist
 
-
 # local env files
 .env.local
 .env.*.local
@@ -14,6 +13,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 # firebase local emulator data
+.firebaserc
 .firebase/local
 firebase-debug.log
 firestore-debug.log
