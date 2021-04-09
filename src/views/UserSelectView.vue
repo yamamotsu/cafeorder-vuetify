@@ -56,13 +56,15 @@
       <items-history v-model="showItemsHistory">
       </items-history>
 
+      <!-- new user card -->
       <v-overlay :value="isAddUser" light>
         <div :style="{width: '250px'}">
           <user-card
             :user="newUser"
             :isPrefab="true"
             @created="user => addNewUser(user)"
-            @cancelEdit="endAddUser()"/>
+            @cancelEdit="endAddUser()"
+            />
         </div>
       </v-overlay>
     </div>
@@ -72,11 +74,13 @@
 <script>
 import config from "../config"
 import Vue from "vue"
-import UserCard from "./UserCard"
 import UserManagerApi from "@/api/UserManager"
 import AdminAuth from "@/api/AdminAuth"
 import firebase from "../firebase"
+import UserCard from "./UserCard"
 import ItemHistoryView from "./ItemHistoryView"
+Vue.component("user-card", UserCard)
+Vue.component("items-history", ItemHistoryView)
 
 export default {
   name: "UserSelectPage",
@@ -170,7 +174,7 @@ export default {
         behavior: "smooth"
       })
       this.$router.push({
-        name: "ItemSelectPage",
+        name: "ItemSelectView",
         params: {"user": user}
       })
     },
@@ -189,9 +193,6 @@ export default {
     }
   }
 }
-
-Vue.component("user-card", UserCard)
-Vue.component("items-history", ItemHistoryView)
 </script>
 
 <style lang="sass" scoped>

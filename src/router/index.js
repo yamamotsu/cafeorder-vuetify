@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import UserSelectView from '../views/UserSelectView'
-import ItemSelectPage from '../views/ItemSelectPage'
+import ItemSelectView from '../views/ItemSelectView'
 
 Vue.use(Router)
 
@@ -18,8 +18,8 @@ export default new Router({
     },
     {
       path: '/items',
-      name: 'ItemSelectPage',
-      component: ItemSelectPage,
+      name: 'ItemSelectView',
+      component: ItemSelectView,
     }
   ]
 })

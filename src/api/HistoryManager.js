@@ -1,11 +1,10 @@
 import firebase from '../firebase'
-import UserManagerApi from './UserManager'
+// import UserManagerApi from './UserManager'
 
 class HistoryManagerApi {
   constructor() {
     this.firestore = firebase.firestore();
     this.historyCollection = this.firestore.collection('transactions');
-    this.userManager = UserManagerApi.UserManager;
   }
 
   async addPurchaseHistory(user, cart) {
