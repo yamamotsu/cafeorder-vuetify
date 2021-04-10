@@ -159,7 +159,7 @@ export default {
       this.isAddUser = false
     },
     removeUser (user) {
-      var users = UserManagerApi.UserManager.unableUser(user)
+      const users = UserManagerApi.UserManager.unableUser(user)
       this.updateUsers(users)
       // this.users.remove(user)
     },

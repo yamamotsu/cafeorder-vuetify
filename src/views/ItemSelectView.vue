@@ -270,7 +270,7 @@ export default {
     },
     async checkOut () {
       console.log(this.cart)
-      var totalValue = this.getCartTotalValue()
+      const totalValue = this.getCartTotalValue()
 
       this.isPurchaseProcessing = true
       // update user's info
@@ -295,9 +295,9 @@ export default {
       setTimeout(this.closePurchasedModal, 3000)
     },
     getCartTotalValue () {
-      var sum = 0
-      for(var id in this.cart.items){
-        var theItem = this.cart.items[id]
+      let sum = 0
+      for(const id in this.cart.items){
+        const theItem = this.cart.items[id]
         // console.log(theItem)
         sum += theItem.item.amount * theItem.quantity
       }

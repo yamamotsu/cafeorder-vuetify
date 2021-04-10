@@ -8,22 +8,22 @@ class HistoryManagerApi {
   }
 
   async addPurchaseHistory(user, cart) {
-    var time = this.getTimeStamp()
-    var data = {
+    const time = this.getTimeStamp()
+    const data = {
       timestamp: time,
       user: user.id,
       type: "purchase",
       value: -this.getTotalValue(cart.items)
     }
 
-    var id = ""
+    let id = ""
     // append history
     await this.historyCollection.add(data).then((ref) => {
       // add items data to history
-      var itemsCollection = ref.collection("items")
-      for (var itemId in cart.items) {
-        var theItem = cart.items[itemId]
-        var itemData = {
+      const itemsCollection = ref.collection("items")
+      for (const itemId in cart.items) {
+        const theItem = cart.items[itemId]
+        const itemData = {
           id: itemId,
           name: theItem.item.name,
           amount: theItem.item.amount,
@@ -38,9 +38,9 @@ class HistoryManagerApi {
   }
 
   async addSetValueHistory(user, value) {
-    var time = this.getTimeStamp()
-    var diff = value - user.balance
-    var data = {
+    const time = this.getTimeStamp()
+    const diff = value - user.balance
+    const data = {
       timestamp: time,
       user: user.id,
       type: "set",
@@ -137,7 +137,7 @@ class HistoryManagerApi {
       // ユーザーの残高をrevert
       user.balance -= data["value"]
 
-      var revertData = {}
+      let revertData = {}
       revertData["timestamp"] = this.getTimeStamp()
       revertData["type"] = "revert"
       revertData["value"] = -data["value"]
@@ -149,8 +149,8 @@ class HistoryManagerApi {
   }
 
   async getById(id) {
-    var historyDoc = this.historyCollection.doc(id)
-    var data = {}
+    const historyDoc = this.historyCollection.doc(id)
+    let data = {}
     await historyDoc.get().then((snapshot) => {
       data = snapshot.data()
 
@@ -189,9 +189,9 @@ class HistoryManagerApi {
   }
 
   getTotalValue(items) {
-    var sum = 0
-    for (var itemId in items) {
-      var theItem = items[itemId]
+    let sum = 0
+    for (const itemId in items) {
+      const theItem = items[itemId]
       sum += theItem.item.amount * theItem.quantity
     }
     return sum

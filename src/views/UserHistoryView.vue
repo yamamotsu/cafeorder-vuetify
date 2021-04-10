@@ -112,7 +112,7 @@ export default {
       history.forEach(record => {
         if(record.type === "purchase") {
           record.items.forEach(item => {
-            var subtotal = 0
+            let subtotal = 0
             if("subtotal" in item){
               subtotal = item.subtotal
             }else{

@@ -80,7 +80,7 @@ export default {
   },
   methods: {
     reduceQuantity (itemId) {
-      var theItem = this.cart.items[itemId]
+      const theItem = this.cart.items[itemId]
       if(theItem.quantity <= 0)
       {
         return
@@ -97,22 +97,22 @@ export default {
       }
     },
     addQuantity (itemId) {
-      var theItem = this.cart.items[itemId]
+      const theItem = this.cart.items[itemId]
       this.$set(theItem, "quantity", theItem.quantity + 1)
     },
     getCartTotalValue () {
-      var sum = 0
-      for(var itemName in this.cart.items){
-        var theItem = this.cart.items[itemName]
+      let sum = 0
+      for(const itemName in this.cart.items){
+        const theItem = this.cart.items[itemName]
         // console.log(theItem)
         sum += theItem.item.amount * theItem.quantity
       }
       return sum
     },
     getCartTotalQuantity () {
-      var sum = 0
-      for(var itemName in this.cart.items){
-        var theItem = this.cart.items[itemName]
+      let sum = 0
+      for(const itemName in this.cart.items){
+        const theItem = this.cart.items[itemName]
         sum += theItem.quantity
       }
       return sum
@@ -134,8 +134,8 @@ export default {
     },
     cartTotalQuantity () {
       let sum = 0
-      for(var itemName in this.cart.items){
-        var theItem = this.cart.items[itemName]
+      for(const itemName in this.cart.items){
+        const theItem = this.cart.items[itemName]
         sum += theItem.quantity
       }
       return sum

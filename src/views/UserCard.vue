@@ -219,7 +219,7 @@ export default {
       this.isColorSelectMode = false
     },
     async onUndoButtonClicked () {
-      var isUndo = confirm("Would you UNDO your last operation?")
+      const isUndo = confirm("Would you UNDO your last operation?")
       if (!isUndo) {
         return
       }

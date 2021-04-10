@@ -109,7 +109,7 @@ class UserManagerApi {
   }
 
   async overwriteUser(user) {
-    var userDoc = this.usersCollection.doc(user.id)
+    const userDoc = this.usersCollection.doc(user.id)
     await userDoc.set(user)
 
     this.users[user.id] = user
