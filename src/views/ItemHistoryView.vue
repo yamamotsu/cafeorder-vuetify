@@ -46,7 +46,7 @@ export default {
         { text:"Quantity", value:"quantity" },
         { text:"Subtotal", value:"subtotal" },
       ]
-    };
+    }
   },
   props: ['value'],
   async mounted () {
@@ -58,38 +58,38 @@ export default {
   },
   computed: {
     totalValue() {
-      let total = 0;
+      let total = 0
       this.items.forEach(item => {
-        total += item.amount * item.quantity;
-      });
-      return total;
+        total += item.amount * item.quantity
+      })
+      return total
     }
   },
   methods: {
     onRightArrowClicked () {
       if (this.date >= this.getThisMonth()) {
-        return;
+        return
       }
-      this.date.setMonth(this.date.getMonth() + 1);
-      this.updateYearMonth();
+      this.date.setMonth(this.date.getMonth() + 1)
+      this.updateYearMonth()
       this.items = []
-      this.updateList();
+      this.updateList()
     },
     onLeftArrowClicked () {
-      this.date.setMonth(this.date.getMonth() - 1);
-      this.updateYearMonth();
+      this.date.setMonth(this.date.getMonth() - 1)
+      this.updateYearMonth()
       this.items = []
-      this.updateList();
+      this.updateList()
     },
     async updateList () {
       // 購入アイテムリストを再取得し，表示を更新
       // まずアイテム名をキーにとる辞書(Object)として格納していき
       // 購入数の降順で並べ替え，リスト化してクラスメンバ変数`items`に格納
       this.loading = true
-      let items_dict = {};
-      let date_to = new Date(this.date);
-      const all_items = this.all_items;
-      date_to.setMonth(this.date.getMonth()+1);
+      let items_dict = {}
+      let date_to = new Date(this.date)
+      const all_items = this.all_items
+      date_to.setMonth(this.date.getMonth()+1)
       await HistoryManagerApi.HistoryManager.getUsersMonthHistory(
         null, // user=null: 全員の履歴を取得
         this.date,
@@ -98,51 +98,51 @@ export default {
         history?.forEach(record => {
           if(record.type==="purchase"){
             record.items.forEach(item => {
-              const id = ItemManager.getIdFromItem(item);
+              const id = ItemManager.getIdFromItem(item)
               if(id in items_dict){
-                items_dict[id].quantity += item.quantity;
+                items_dict[id].quantity += item.quantity
               }else{
-                items_dict[id] = item;
+                items_dict[id] = item
                 if(!('amount' in item) && id in all_items){
-                  items_dict[id].amount = all_items[id].amount;
+                  items_dict[id].amount = all_items[id].amount
                 }
               }
-            });
+            })
 
             Object.keys(items_dict).forEach(id => {
               items_dict[id].subtotal = items_dict[id].quantity * items_dict[id].amount
             })
           }else{
-            // console.log("record type is not purchase");
+            // console.log("record type is not purchase")
           }
-        });
+        })
 
         // アイテムを購入数順に降順ソート
-        const itemArray = Object.values(items_dict);
+        const itemArray = Object.values(items_dict)
         itemArray.sort(function(a,b){
-          if(a.quantity > b.quantity) return -1;
-          if(a.quantity < b.quantity) return 1;
-          return 0;
+          if(a.quantity > b.quantity) return -1
+          if(a.quantity < b.quantity) return 1
+          return 0
         })
-        this.items = itemArray;
-      });
+        this.items = itemArray
+      })
       this.loading = false
     },
     getThisMonth() {
-      let now = new Date(Date.now());
-      return new Date(now.getFullYear(), now.getMonth());
+      let now = new Date(Date.now())
+      return new Date(now.getFullYear(), now.getMonth())
     },
     updateYearMonth() {
-      this.year = this.date.getFullYear();
-      this.month = this.date.getMonth() + 1;
+      this.year = this.date.getFullYear()
+      this.month = this.date.getMonth() + 1
     },
   },
   filters: {
     monthStr(month) {
-      return Util.Utils.formatMonth2Str(month);
+      return Util.Utils.formatMonth2Str(month)
     }
   }
-};
+}
 
 </script>
 
