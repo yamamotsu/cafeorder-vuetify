@@ -160,7 +160,7 @@ Vue.component("history", HistoryView)
 
 export default {
   name: "UserCard",
-  data: function() {
+  data () {
     return {
       isColorSelectMode: false,
       isEdit: false,

@@ -125,7 +125,7 @@ import UploaderApi from "../api/Uploader"
 
 export default {
   name: "ItemCard",
-  data: function() {
+  data () {
     return {
       isEditMode:false,
       thumbnailImage: null,
@@ -154,7 +154,7 @@ export default {
     }
   },
   methods: {
-    onClick: function() {
+    onClick () {
       if (this.isEditable) return
       this.$emit("click", this.item)
     },

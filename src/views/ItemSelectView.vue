@@ -12,7 +12,7 @@
           Back
       </v-btn>
       <v-spacer/>
-      <v-toolbar-title class="white--text text-h5">{{user.name}}: {{user.balance | amountDisplay}}</v-toolbar-title>
+      <v-toolbar-title class="white--text text-h5">{{ headerText }}</v-toolbar-title>
       <v-spacer/>
       <v-btn
         icon
@@ -68,17 +68,18 @@
 
       <!-- All Item Cards -->
       <div class="section">
-          <h3 class="section-title my-0">All items</h3>
-          <v-chip-group multiple
-            class="mx-3"
-            v-model="categoryFilter">
-            <v-spacer/>
-            <v-chip filter outlined
-              :disabled="isEditable"
-              v-for="category in categories" :key="category.id"
-              :color="category.color"
-              :value="category.id">{{category.name}}</v-chip>
-          </v-chip-group>
+        <h3 class="section-title my-0">All items</h3>
+        <v-progress-circular indeterminate v-show="loading"/>
+        <v-chip-group multiple
+          class="mx-3"
+          v-model="categoryFilter">
+          <v-spacer/>
+          <v-chip filter outlined
+            :disabled="isEditable"
+            v-for="category in categories" :key="category.id"
+            :color="category.color"
+            :value="category.id">{{category.name}}</v-chip>
+        </v-chip-group>
         <v-container>
           <v-row>
             <v-col
@@ -174,11 +175,12 @@ Vue.component("item-card", ItemCard)
 
 export default {
   name: "ItemSelectPage",
-  data: function() {
+  data () {
     return {
       items: {},
       favItems: [],
       user: {},
+      loading: false,
       isAdminMode: false,
       isCartEnabled: false,
       isAddItem: false,
@@ -209,6 +211,7 @@ export default {
       this.isAdminMode = this.$route.params.isAdminMode
     }
 
+    this.loading = true
     this.user = await UserManagerApi.UserManager.getCurrentUser()
     console.log("current user:", this.user)
     await this.getAllItems()
@@ -216,18 +219,13 @@ export default {
     const favItems = await UserManagerApi.UserManager.fetchFavoriteItems(this.user, this.items)
     console.log("favItems:", favItems)
     this.favItems = favItems
+    this.loading = false
   },
   filters: {
-    amountDisplay: function(amount) {
-      if (amount >= 0) {
-        return "+¥" + amount
-      }
-      return "-¥" + -1*amount
-    },
-    abs: function(amount) {
+    abs (amount) {
       return Math.abs(amount)
     },
-    billOrDepositMessage: function(amount){
+    billOrDepositMessage (amount){
       if (amount >= 0) {
         return "残高:"
       }
@@ -235,12 +233,12 @@ export default {
     },
   },
   methods: {
-    getAllItems: async function () {
+    async getAllItems () {
       this.items = await ItemManager.getAllItems(false)
       this.categories = ItemManager.categories
       // this.categoryFilter = Object.keys(this.categories)
     },
-    addNewItem: async function (item) {
+    async addNewItem (item) {
       this.$set(this.items, item.id, item)
       this.endAddItem()
     },
@@ -254,7 +252,7 @@ export default {
       const items = ItemManager.setEnableItem(item, enable)
       this.updateItems(items)
     },
-    endAddItem: function () {
+    endAddItem () {
       this.newItem = {
         name: "",
         id: "",
@@ -266,7 +264,7 @@ export default {
       }
       this.isAddItem = false
     },
-    backToUserPage: function () {
+    backToUserPage () {
       this.cleanUpCart()
       this.$router.push('/users')
     },
@@ -296,7 +294,7 @@ export default {
       this.isPurchaseCompleted = true
       setTimeout(this.closePurchasedModal, 3000)
     },
-    getCartTotalValue: function() {
+    getCartTotalValue () {
       var sum = 0
       for(var id in this.cart.items){
         var theItem = this.cart.items[id]
@@ -305,7 +303,7 @@ export default {
       }
       return sum
     },
-    cleanUpCart: function () {
+    cleanUpCart () {
       /**
        * カートを空にする．
        * //itemのstock数などを元に戻す
@@ -315,7 +313,7 @@ export default {
       this.cart.lastSelectedItemName = ""
       this.cart.itemCount = 0
     },
-    addItemToCart: function (item) {
+    addItemToCart (item) {
       /* 指定したitemをカートに追加する．
        * この時点では購入は確定されていない．
        * ストックは選択するたびに減るが,
@@ -364,17 +362,23 @@ export default {
         this.backToUserPage()
       }
     },
-    updateItems: function(items) {
+    updateItems (items) {
       this.items = {}
       this.items = items
     },
     getNowString() {
       const now = new Date(Date.now())
       return now.toLocaleString('ja')
-    }
+    },
+    amountDisplay (amount) {
+      if (amount >= 0) {
+        return "+¥" + amount
+      }
+      return "-¥" + -1*amount
+    },
   },
   computed: {
-    cartTotalValue: function () {
+    cartTotalValue () {
       return this.getCartTotalValue()
     },
     sortedItems () {
@@ -384,6 +388,10 @@ export default {
         }
         return x.name < y.name ? -1 : +1
       })
+    },
+    headerText () {
+      if(Object.keys(this.user) == 0) return ""
+      return this.user.name + ": " + this.amountDisplay(this.user.balance)
     }
   }
 }

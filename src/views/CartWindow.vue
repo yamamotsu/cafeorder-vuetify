@@ -73,13 +73,13 @@
 export default {
   name: "CartWindow",
   props: ["cart", "showSummary", "loading"],
-  data: function () {
+  data () {
     return {
       isCartOpen: false
     }
   },
   methods: {
-    reduceQuantity: function(itemId) {
+    reduceQuantity (itemId) {
       var theItem = this.cart.items[itemId]
       if(theItem.quantity <= 0)
       {
@@ -96,11 +96,11 @@ export default {
         this.$set(this.cart, "itemCount", this.cart.itemCount - 1)
       }
     },
-    addQuantity: function(itemId) {
+    addQuantity (itemId) {
       var theItem = this.cart.items[itemId]
       this.$set(theItem, "quantity", theItem.quantity + 1)
     },
-    getCartTotalValue: function() {
+    getCartTotalValue () {
       var sum = 0
       for(var itemName in this.cart.items){
         var theItem = this.cart.items[itemName]
@@ -109,7 +109,7 @@ export default {
       }
       return sum
     },
-    getCartTotalQuantity: function() {
+    getCartTotalQuantity () {
       var sum = 0
       for(var itemName in this.cart.items){
         var theItem = this.cart.items[itemName]
@@ -117,22 +117,22 @@ export default {
       }
       return sum
     },
-    onCheckoutClicked: function () {
+    onCheckoutClicked () {
       this.$emit("checkout")
       this.isCartOpen = false
     },
-    closeCart: function () {
+    closeCart () {
       this.$emit("close")
     },
   },
   computed: {
-    lastSelectedItem: function () {
+    lastSelectedItem () {
       return this.cart.items[this.cart.lastSelectedItemName]
     },
-    cartTotalValue: function () {
+    cartTotalValue () {
       return this.getCartTotalValue()
     },
-    cartTotalQuantity: function () {
+    cartTotalQuantity () {
       let sum = 0
       for(var itemName in this.cart.items){
         var theItem = this.cart.items[itemName]
@@ -142,10 +142,10 @@ export default {
     }
   },
   filters: {
-    amountDisplay: function (amount) {
+    amountDisplay (amount) {
       return "¥" + amount
     },
-    itemCountDisplay: function(itemCount) {
+    itemCountDisplay (itemCount) {
       if(itemCount <= 0)
       {
         return ""

@@ -44,7 +44,7 @@ import Util from "../api/Util"
 import ItemManager from "@/api/ItemManager"
 
 export default {
-  data: function () {
+  data () {
     return {
       year: 0,
       month: 1,

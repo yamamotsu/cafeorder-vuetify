@@ -83,7 +83,7 @@ Vue.component("user-card", UserCard)
 Vue.component("items-history", ItemHistoryView)
 
 export default {
-  data: function() {
+  data () {
     return {
       users: {},
       isAddUser: false,
@@ -120,7 +120,7 @@ export default {
       this.users = await UserManagerApi.UserManager.getAllUsers()
       console.log("all users:", this.users)
     },
-    getNewsInfo: function () {
+    getNewsInfo () {
       const firestore = firebase.firestore()
       firestore.collection("system").doc("news").get().then(snapshot => {
         this.infoData = snapshot.data()
@@ -138,18 +138,18 @@ export default {
         }
       })
     },
-    onInfoBarClicked: function () {
+    onInfoBarClicked () {
       if (!this.infoData.hasDetail) {return}
 
       window.open(this.infoData.url, "_blank")
     },
-    addNewUser: function (user) {
+    addNewUser (user) {
       console.log('adding user:', user)
       // this.$set(this.users, user.id, user)
       this.getAllUsers()
       this.endAddUser()
     },
-    endAddUser: function () {
+    endAddUser () {
       this.newUser = {
         name: "",
         balance: 0,
@@ -158,16 +158,16 @@ export default {
       }
       this.isAddUser = false
     },
-    removeUser: function (user) {
+    removeUser (user) {
       var users = UserManagerApi.UserManager.unableUser(user)
       this.updateUsers(users)
       // this.users.remove(user)
     },
-    updateUsers: function (users) {
+    updateUsers (users) {
       this.users = {}
       this.users = users
     },
-    goItemSelectPage: function (user) {
+    goItemSelectPage (user) {
       window.scrollTo({
         top: 0,
         behavior: "smooth"

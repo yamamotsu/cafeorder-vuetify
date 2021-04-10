@@ -9,10 +9,10 @@ export default new Router({
   routes: [
     {
       path: '/',
-      redirect: '/users'
+      component: ItemSelectView
     },
     {
-      path: '/users',
+      path: '/admin',
       name: 'UserSelectView',
       component: UserSelectView,
     },
