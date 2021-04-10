@@ -83,7 +83,6 @@ Vue.component("user-card", UserCard)
 Vue.component("items-history", ItemHistoryView)
 
 export default {
-  name: "UserSelectPage",
   data: function() {
     return {
       users: {},
@@ -170,12 +169,13 @@ export default {
     },
     goItemSelectPage: function (user) {
       window.scrollTo({
-        top:0,
+        top: 0,
         behavior: "smooth"
       })
+      UserManagerApi.UserManager.setCurrentUser(user.id)
       this.$router.push({
         name: "ItemSelectView",
-        params: {"user": user}
+        params: {"isAdminMode": true}
       })
     },
     showMonthlyPurchasedItems(){

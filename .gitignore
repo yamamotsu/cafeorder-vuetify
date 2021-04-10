@@ -13,6 +13,8 @@ yarn-error.log*
 pnpm-debug.log*
 
 # firebase local emulator data
+tools/credentials.json
+
 .firebaserc
 .firebase/local
 firebase-debug.log

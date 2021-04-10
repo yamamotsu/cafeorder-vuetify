@@ -1,28 +1,82 @@
-import firebase from '../firebase';
-import HistoryManagerApi from './HistoryManager';
-import ItemManager from './ItemManager';
-
+import firebase from '../firebase'
+import HistoryManagerApi from './HistoryManager'
+import ItemManager from './ItemManager'
+import AdminAuth from './AdminAuth'
 
 class UserManagerApi {
   constructor() {
     this.database = firebase.firestore();
     this.usersCollection = this.database.collection('users');
+    this.authUsersCollection = this.database.collection('authUsers');
     this.userFavItems = {};
-    this.users = {}
+    this.users = null
+    this.authUsers = null
+    this.currentUser = null
   }
 
-  async getAllUsers() {
-    this.users = {};
+  async getAllUsers(forceReflesh=false) {
+    if(forceReflesh == false && this.users != null) return this.users
+
+    this.users = {}
     await this.usersCollection.orderBy("name", "asc").get().then(
       (snapshots) => {
         snapshots.forEach((user) => {
-          // this.users.push(user.data())
-          this.users[user.id] = user.data();
-          this.users[user.id]["id"] = user.id;
+          this.users[user.id] = user.data()
+          this.users[user.id]["id"] = user.id
         });
       }
-    );
-    return this.users;
+    )
+    return this.users
+  }
+
+  async getAllAuthUsers(forceReflesh=false){
+    if(forceReflesh == false && this.authUsers != null) return this.authUsers
+
+    this.authUsers = {}
+    await this.authUsersCollection.get().then(
+      snapshots => {
+        snapshots.forEach(authUser => {
+          this.authUsers[authUser.id] = authUser.data()
+        })
+      }
+    )
+    return this.authUsers
+  }
+
+  async getUserFromAuthUID(authUID) {
+    const snapshot = await this.authUsersCollection.doc(authUID).get()
+    if(!snapshot.exists) {
+      console.error("`UserID` was not found which has authUID:", authUID)
+      return null
+    }
+    const userId = snapshot.data().user
+    console.log('authuser:', authUID, ' userId:', userId)
+    const userSnapshot = await this.usersCollection.doc(userId).get()
+    if(!userSnapshot.exists) {
+      console.error("User was not found of user-id:", userId)
+      return null
+    }
+    let user = userSnapshot.data()
+    user.id = userSnapshot.id
+
+    return user
+  }
+
+  async getAuthUser(forceReflesh=false) {
+    if(forceReflesh == false && this.currentUser != null) return this.currentUser
+
+    const auth = await AdminAuth.Auth.getUser()
+    // console.log('auth:', auth)
+    this.currentUser = await this.getUserFromAuthUID(auth.uid)
+    return this.currentUser
+  }
+
+  setCurrentUser(userId) {
+    this.currentUser = this.users[userId]
+  }
+  async getCurrentUser() {
+    if(this.currentUser) return this.currentUser
+    return await this.getAuthUser()
   }
 
   exists(user)
@@ -43,6 +97,15 @@ class UserManagerApi {
       this.usersCollection.doc(ref.id).set(this.users[ref.id]);
     });
     return this.users;
+  }
+
+  async overwriteCurrentUser(data) {
+    await this.usersCollection.doc(this.currentUser.id).set(data)
+    this.currentUser = data
+    if(this.users) {
+      this.users[this.currentUser.id] = data
+    }
+    return this.currentUser
   }
 
   async overwriteUser(user) {

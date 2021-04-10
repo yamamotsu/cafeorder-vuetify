@@ -26,6 +26,11 @@ class AdminAuth {
     }
   }
 
+  async getUser (forceReflesh=false) {
+    if(!forceReflesh && this.user != null) return this.user
+    return await this.loginWithGoogle()
+  }
+
   async logout () {
     if(config.ignoreAdmin) return
     await firebase.auth().signOut()

@@ -2,6 +2,7 @@
   <div class="item-select-page">
     <v-app-bar dense fixed elevate-on-scroll color="primary">
       <v-btn
+        v-if="isAdminMode"
         elevation="0"
         outlined
         color="secondary"
@@ -13,7 +14,14 @@
       <v-spacer/>
       <v-toolbar-title class="white--text text-h5">{{user.name}}: {{user.balance | amountDisplay}}</v-toolbar-title>
       <v-spacer/>
+      <v-btn
+        icon
+        color="secondary"
+        @click="isShowHistory = true">
+        <v-icon>mdi-history</v-icon>
+      </v-btn>
       <v-switch
+        v-if="isAdminMode"
         dense
         :hide-details="true"
         color="secondary"
@@ -22,6 +30,7 @@
         class="mr-4"
         />
       <v-btn
+        v-if="isAdminMode"
         icon
         color="secondary"
         @click="isAddItem = true">
@@ -143,16 +152,21 @@
           />
         </div>
       </v-overlay>
+
+      <!-- user history -->
+      <v-bottom-sheet inset v-model="isShowHistory">
+        <history :user="user"/>
+      </v-bottom-sheet>
     </div>
   </div>
 </template>
 
 <script>
 import Vue from "vue"
-import ItemManager from "@/api/ItemManager"
-import UserManagerApi from "@/api/UserManager"
-import HistoryManagerApi from "@/api/HistoryManager"
-import AdminAuth from "@/api/AdminAuth"
+import ItemManager from "../api/ItemManager"
+import UserManagerApi from "../api/UserManager"
+import HistoryManagerApi from "../api/HistoryManager"
+// import AdminAuth from "@/api/AdminAuth"
 import CartWindow from "./CartWindow"
 import ItemCard from "./ItemCard"
 Vue.component("cart", CartWindow)
@@ -164,11 +178,13 @@ export default {
     return {
       items: {},
       favItems: [],
-      user: this.$route.params.user,
+      user: {},
+      isAdminMode: false,
       isCartEnabled: false,
       isAddItem: false,
       isPurchaseCompleted: false,
       isPurchaseProcessing: false,
+      isShowHistory: false,
       isEditable: false,
       categories: {},
       categoryFilter: [],
@@ -189,13 +205,14 @@ export default {
     }
   },
   async mounted() {
-    console.log(this.user)
-    if(!this.$route.params.user) {
-        this.$router.push({name: "UserSelectPage"})
+    if (this.$route.params.isAdminMode){
+      this.isAdminMode = this.$route.params.isAdminMode
     }
-    this.adminuser = await AdminAuth.Auth.loginWithGoogle()
+
+    this.user = await UserManagerApi.UserManager.getCurrentUser()
+    console.log("current user:", this.user)
     await this.getAllItems()
-    console.log('items:', this.items)
+    console.log('all items:', this.items)
     const favItems = await UserManagerApi.UserManager.fetchFavoriteItems(this.user, this.items)
     console.log("favItems:", favItems)
     this.favItems = favItems
@@ -259,8 +276,7 @@ export default {
 
       this.isPurchaseProcessing = true
       // update user's info
-      const users = await UserManagerApi.UserManager.getAllUsers()
-      this.user = users[this.user.id]
+      this.user = await UserManagerApi.UserManager.getCurrentUser()
       if(!this.user){
         alert("sorry, this user has been deleted.")
         this.isCartEnabled = false
@@ -272,7 +288,7 @@ export default {
       this.user.balance -= totalValue
 
       await HistoryManagerApi.HistoryManager.addPurchaseHistory(this.user, this.cart)
-      await UserManagerApi.UserManager.overwriteUser(this.user)
+      await UserManagerApi.UserManager.overwriteCurrentUser(this.user)
 
       // show completed modal
       this.isCartEnabled = false
@@ -334,18 +350,19 @@ export default {
 
       this.isCartEnabled = true
     },
-    closePurchasedModal: function () {
-      if(!this.isPurchaseCompleted) {
+    closePurchasedModal () {
+      if (!this.isPurchaseCompleted) {
         return
       }
+      this.cleanUpCart()
       this.isPurchaseCompleted = false
       window.scrollTo({
         top:0,
         behavior: "smooth"
       })
-      this.$router.push({
-        name:"UserSelectView"
-      })
+      if (this.isAdminMode) {
+        this.backToUserPage()
+      }
     },
     updateItems: function(items) {
       this.items = {}
