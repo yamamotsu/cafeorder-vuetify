@@ -5,25 +5,47 @@ service cloud.firestore {
       return request.auth != null;
     }
     function isVerifiedAccount() {
-      return isSignedIn() && exists(/databases/$(database)/documents/roles/$(request.auth.uid));
+      return isSignedIn() && ("verified" in request.auth.token) && request.auth.token.verified;
     }
-    function getRole() {
-      return get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role;
+    function isAdmin() {
+    	return request.auth.token.admin;
     }
 
     match /{document=**} {
-      allow read, write: if isVerifiedAccount() && getRole() == "admin";
+      allow read, write: if isVerifiedAccount() && isAdmin();
     }
 
     match /users/{user} {
     	function isOwnedUser(rsc) {
-      	return "owner" in rsc.data && rsc.data.owner == request.auth.uid;
+      	// return "owner" in rsc.data && rsc.data.owner == request.auth.uid;
+        return rsc.id == request.auth.token.userId;
       }
-    	allow read, write: if isVerifiedAccount() && isOwnedUser(resource);
+    	allow read: if isVerifiedAccount() && isOwnedUser(resource);
+      allow update: if isVerifiedAccount() && isOwnedUser(request.resource) && isOwnedUser(resource);
     }
 
     match /items/{item} {
     	allow read: if isVerifiedAccount();
+    }
+
+    match /transactions/{transaction} {
+    	allow read: if resource.data.user == request.auth.token.userId;
+    	allow create: if request.resource.data.user == request.auth.token.userId;
+      match /items/{item} {
+      	function isOwnRecord(tsc) {
+        	return get(/databases/$(database)/documents/transactions/$(tsc)).data.user == request.auth.token.userId;
+        }
+      	allow read: if isOwnRecord(transaction);
+        allow create: if isOwnRecord(transaction);
+      }
+    }
+
+    match /categories/{category} {
+    	allow read: if isVerifiedAccount();
+    }
+
+    match /authUsers/{user} {
+    	allow read: if resource.id == request.auth.uid;
     }
   }
 }
