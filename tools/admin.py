@@ -2,6 +2,7 @@ import firebase_admin
 from firebase_admin import credentials, auth, firestore
 import argparse
 import json
+from numpy import disp
 import pandas as pd
 
 TOKEN_KEYS = {'verified': bool, 'admin':bool, 'userId':str}
@@ -30,8 +31,13 @@ def config_auth():
         uid = input()
         print('> ', uid)
         user = auth.get_user(uid)
+        print('> e-mail:', user.email)
         token = user.custom_claims
-        print('> current token:', token)
+        if token is None:
+            print('> token has not set')
+            token = {}
+        else:
+            print('> current token:', token)
         print('-'*10)
         for key in TOKEN_KEYS.keys():
             print(f"Enter the new value of `{key}` (leave empty for no change): ", end="")
@@ -47,6 +53,9 @@ def config_auth():
         yn = input()
         if yn == "" or yn == "y" or yn == "Y":
             auth.set_custom_user_claims(uid, token, app=None)
+            # update authUsers document on DB
+            db = firestore.client().collection('authUsers')
+            db.document(uid).set({ 'user': token['userId'] })
             print("OK.")
         else:
             print()
@@ -63,9 +72,9 @@ def list_auth_users():
         users_table.append({
             "uid": user.uid,
             "e-mail": user.email,
-            "verified?": token["verified"],
-            "userId(on DB)": token["userId"],
-            "admin": token["admin"]
+            "verified?": token.get("verified", "False(None)"),
+            "userId(on DB)": token.get("userId", "None"),
+            "admin": token.get("admin", "None")
         })
     df = pd.DataFrame.from_dict(users_table)
     df = df.set_index('uid')
