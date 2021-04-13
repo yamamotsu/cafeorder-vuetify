@@ -92,8 +92,8 @@ def init_categories(config:dict):
         i.e. :
         config = {
             "categories": [
-                { "name": "お菓子", "order": 0 },
-                { "name": "食べもの", "order": 1 },
+                { "name": "Snacks", "order": 0, "color": "#FA738C" },
+                { "name": "Drinks", "order": 1, "color": "#84D7FA" },
                 ...
             ]
         }
@@ -114,9 +114,10 @@ def init_categories(config:dict):
         data = {
             "name": category["name"],
             "order": category["order"],
+            "color": category.get("color", ""), # `color` is not required
             "id": doc.id
         }
-        print(f" > name:{category['name']}, order:{category['order']} as id:{doc.id}")
+        print(f" > name:{data['name']}, order:{data['order']}, color:{data['color']} as id:{doc.id}")
         doc.set(data)
 
 
