@@ -39,7 +39,9 @@
           label="残高"
           :rules="amountRules"
           type="Number"
-          v-model="newUser.balance"/>
+          :value="newUser.balance"
+          @input="val => onBalanceInput(val)"
+          />
         <v-chip-group column>
           <v-spacer/>
           <v-chip
@@ -155,6 +157,7 @@ import colors from 'vuetify/lib/util/colors'
 import HistoryManagerApi from "../api/HistoryManager"
 import UserManagerApi from "../api/UserManager"
 import HistoryView from "./UserHistoryView"
+import Utils from "../api/Util"
 
 Vue.component("history", HistoryView)
 
@@ -182,7 +185,6 @@ export default {
       ],
       amountRules: [
         value => typeof(value) != Number || '数値を入力してください',
-        value => !!value || 'Required'
       ],
       colorTable: [
         ["#FD7665", "#9BFD89", "#6F74FD", "#5a5a5a"],
@@ -228,6 +230,9 @@ export default {
       await this.updateUserDB(this.user)
       this.showSnackBar("Undo completed")
     },
+    onBalanceInput(val) {
+      this.newUser.balance = Utils.str2Int(val)
+    },
     showSnackBar(message, duration=2000){
       this.snackbar.text = message
       this.snackbar.duration = duration
@@ -241,7 +246,7 @@ export default {
 
       this.loading = true
       if (!this.isPrefab && this.user.balance != this.newUser.balance) {
-        await this.addSetBalanceHistory(this.newUser.balance)
+        await this.addSetBalanceHistory(this.newUser.balance, this.user.balance)
       }
       // this.user = Object.assign({}, this.newUser)
       this.user.name = this.newUser.name
@@ -252,6 +257,9 @@ export default {
         const user = await UserManagerApi.UserManager.addUser(this.newUser)
         this.newUser.id = user.id
         this.user.id = user.id
+        if(this.newUser.balance != 0){
+          await this.addSetBalanceHistory(this.newUser.balance, 0)
+        }
         this.$emit('created', this.user)
       }
       else{
@@ -270,8 +278,9 @@ export default {
     async updateUserDB (newUser) {
       await UserManagerApi.UserManager.overwriteUser(newUser)
     },
-    async addSetBalanceHistory (newBalance) {
-      await HistoryManagerApi.HistoryManager.addSetValueHistory(this.user, newBalance)
+    async addSetBalanceHistory (newBalance, currentBalance=0) {
+      const diff = newBalance - currentBalance
+      await HistoryManagerApi.HistoryManager.addSetValueHistory(this.user, diff)
     },
     getVisibleColor(color, color2="#FFFFFF"){
       const diff1 = ColorUtil.getColorDiff(this.user.color, color)

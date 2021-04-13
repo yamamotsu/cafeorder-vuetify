@@ -236,21 +236,13 @@ export default {
     async getAllItems () {
       this.items = await ItemManager.getAllItems(false)
       this.categories = ItemManager.categories
-      // this.categoryFilter = Object.keys(this.categories)
     },
     async addNewItem (item) {
-      this.$set(this.items, item.id, item)
+      let items = this.items
+      items[item.id] = item
+      this.items = {}
+      this.items = items
       this.endAddItem()
-    },
-    isVisibleItem(item){
-      if(!item.enable) return false
-      if(this.categoryFilter.length == 0) return true
-      return this.categoryFilter.includes(item.category?.toString())
-    },
-    setEnableItem (item, enable){
-      // console.log(enable)
-      const items = ItemManager.setEnableItem(item, enable)
-      this.updateItems(items)
     },
     endAddItem () {
       this.newItem = {
@@ -264,9 +256,21 @@ export default {
       }
       this.isAddItem = false
     },
+    isVisibleItem(item){
+      if(!item.enable) return false
+      if(this.categoryFilter.length == 0) return true
+      return this.categoryFilter.includes(item.category?.toString())
+    },
+    setEnableItem (item, enable){
+      // console.log(enable)
+      const items = ItemManager.setEnableItem(item, enable)
+      this.updateItems(items)
+    },
     backToUserPage () {
       this.cleanUpCart()
-      this.$router.push('/users')
+      this.$router.push({
+        name:"UserSelectView"
+      })
     },
     async checkOut () {
       console.log(this.cart)

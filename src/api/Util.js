@@ -48,8 +48,13 @@ export class Util {
     }
     return await imageCompression(imgFile, options)
   }
+
+  static str2Int(str, radix=null){
+    if(str === "" || str == undefined || str == null || isNaN(str) || !isFinite(str)) {
+      return 0
+    }
+    return parseInt(str, radix)
+  }
 }
 
-export default {
-  Utils: Util
-}
+export default Util

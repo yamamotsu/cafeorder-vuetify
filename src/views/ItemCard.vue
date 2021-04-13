@@ -92,7 +92,8 @@
         label="価格"
         :rules="nameRules"
         type="Number"
-        v-model="newItem.amount"/>
+        :value="newItem.amount"
+        @input="val => onAmountInput(val)"/>
       <v-select filled dense
         v-model="newItem.category"
         :items='categoriesList'
@@ -122,6 +123,7 @@
 <script>
 import ItemManager from "@/api/ItemManager"
 import UploaderApi from "../api/Uploader"
+import Utils from "../api/Util"
 
 export default {
   name: "ItemCard",
@@ -132,7 +134,7 @@ export default {
       loading: false,
       newItem: {
         name: "",
-        amount: "",
+        amount: 100,
         imageUrl: "",
         category: ""
       },
@@ -157,6 +159,9 @@ export default {
     onClick () {
       if (this.isEditable) return
       this.$emit("click", this.item)
+    },
+    onAmountInput(val) {
+      this.newItem.amount = Utils.str2Int(val)
     },
     async finishEditMode () {
       if(!this.$refs.form.validate()){

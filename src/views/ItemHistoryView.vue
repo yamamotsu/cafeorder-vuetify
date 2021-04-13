@@ -28,7 +28,7 @@
 <script>
 import HistoryManagerApi from "../api/HistoryManager"
 import ItemManager from "../api/ItemManager"
-import Util from "../api/Util"
+import Utils from "../api/Util"
 
 export default {
   data () {
@@ -139,7 +139,7 @@ export default {
   },
   filters: {
     monthStr(month) {
-      return Util.Utils.formatMonth2Str(month)
+      return Utils.formatMonth2Str(month)
     }
   }
 }

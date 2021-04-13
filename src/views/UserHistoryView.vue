@@ -40,7 +40,7 @@
 
 <script>
 import HistoryManagerApi from "../api/HistoryManager"
-import Util from "../api/Util"
+import Utils from "../api/Util"
 import ItemManager from "@/api/ItemManager"
 
 export default {
@@ -149,7 +149,7 @@ export default {
   },
   filters: {
     monthStr (month) {
-      return Util.Utils.formatMonth2Str(month)
+      return Utils.formatMonth2Str(month)
     },
     date2time (date) {
       const hours = date.getHours()

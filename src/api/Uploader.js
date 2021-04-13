@@ -3,7 +3,7 @@
 // https://github.com/yuneco/portfolio/blob/master/src/admin/api/ImageUploaderApi.js
 
 import firebase from '../firebase'
-import Util from './Util'
+import Utils from './Util'
 
 const PUBLIC_IMG_DIR = '/public/imgs'
 const DEFAULT_SUBDIR = 'default'
@@ -46,7 +46,7 @@ class UploaderApi {
 
     console.log('origin file:', imgFile.name)
     console.log('       size:', imgFile.size)
-    const compressedImageFile = await Util.Utils.compressImageFile(imgFile, MAX_IMAGE_SIZE_MB, MAX_WIDTH_OR_HEIGHT)
+    const compressedImageFile = await Utils.compressImageFile(imgFile, MAX_IMAGE_SIZE_MB, MAX_WIDTH_OR_HEIGHT)
     console.log('compressed size:', compressedImageFile.size)
     const task = ref.put(compressedImageFile)
     if (onStatusChanged) {
