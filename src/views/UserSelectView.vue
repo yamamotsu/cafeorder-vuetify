@@ -4,7 +4,7 @@
       <v-btn icon>
         <v-icon midium
           color="secondary"
-          @click="showMonthlyPurchasedItems()">mdi-history</v-icon>
+          @click="showItemsHistory=true">mdi-history</v-icon>
       </v-btn>
       <v-spacer/>
       <v-toolbar-title class="white--text text-h5">{{title}}</v-toolbar-title>
@@ -76,7 +76,6 @@ import config from "../config"
 import Vue from "vue"
 import UserManagerApi from "@/api/UserManager"
 import AdminAuth from "@/api/AdminAuth"
-import firebase from "../firebase"
 import UserCard from "./UserCard"
 import ItemHistoryView from "./ItemHistoryView"
 Vue.component("user-card", UserCard)
@@ -95,13 +94,6 @@ export default {
         color: "FFFFFF",
         enable: true
       },
-      infoData: {
-        "title": "",
-        "enable": false,
-        "url": "",
-        "hasDetail": false
-      },
-      isShowInfo: false,
       isEditable: false,
       title: config.appTitle
     }
@@ -111,42 +103,18 @@ export default {
     this.adminuser = await AdminAuth.Auth.loginWithGoogle()
     console.log('admin user:', this.adminuser)
     this.getAllUsers()
-    this.getNewsInfo()
 
     this.loading = false
   },
   methods: {
-    async getAllUsers () {
-      this.users = await UserManagerApi.UserManager.getAllUsers()
+    async getAllUsers (forceReflesh=false) {
+      this.users = await UserManagerApi.UserManager.getAllUsers(forceReflesh)
       console.log("all users:", this.users)
-    },
-    getNewsInfo () {
-      const firestore = firebase.firestore()
-      firestore.collection("system").doc("news").get().then(snapshot => {
-        this.infoData = snapshot.data()
-        if (!this.infoData) { return }
-        if (!("enable" in this.infoData)) { return }
-        if (this.infoData["enable"] == false) { return }
-
-        const infoDate = this.infoData.timestamp.toDate()
-        let date5ago = new Date(Date.now())
-        date5ago.setDate(date5ago.getDate() - 5)
-        if(infoDate >= date5ago){
-          this.isShowInfo = true
-        }else{
-          this.isShowInfo = false
-        }
-      })
-    },
-    onInfoBarClicked () {
-      if (!this.infoData.hasDetail) {return}
-
-      window.open(this.infoData.url, "_blank")
     },
     addNewUser (user) {
       console.log('adding user:', user)
       // this.$set(this.users, user.id, user)
-      this.getAllUsers()
+      this.getAllUsers(true)
       this.endAddUser()
     },
     endAddUser () {
@@ -161,7 +129,6 @@ export default {
     removeUser (user) {
       const users = UserManagerApi.UserManager.unableUser(user)
       this.updateUsers(users)
-      // this.users.remove(user)
     },
     updateUsers (users) {
       this.users = {}
@@ -178,9 +145,6 @@ export default {
         params: {"isAdminMode": true}
       })
     },
-    showMonthlyPurchasedItems(){
-      this.showItemsHistory=true
-    }
   },
   computed: {
     sortedUsers () {
