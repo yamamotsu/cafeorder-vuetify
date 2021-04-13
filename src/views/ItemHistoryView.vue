@@ -1,9 +1,9 @@
 <template>
   <v-bottom-sheet inset :value="value" @input="v => $emit('input', v)">
     <v-card>
-      <v-toolbar flat max-height="80vh">
-        <v-toolbar-title class="primary--text">history</v-toolbar-title>
-        <v-spacer/>
+      <v-toolbar flat max-height="80vh" class="mx-3">
+        <v-toolbar-title class="primary--text">History</v-toolbar-title>
+        <!-- <v-spacer/> -->
         <v-btn icon @click="onLeftArrowClicked()">
           <v-icon>mdi-chevron-left</v-icon>
         </v-btn>
@@ -11,13 +11,18 @@
         <v-btn icon @click="onRightArrowClicked()" :disabled="year == now.getFullYear() && month-1 == now.getMonth()">
           <v-icon>mdi-chevron-right</v-icon>
         </v-btn>
+        <v-spacer/>
+        <v-toolbar-title class="primary--text">合計売り上げ: {{totalValue}}円</v-toolbar-title>
       </v-toolbar>
 
       <v-data-table
+        class="mx-3"
         :loading="loading"
         :headers="headers"
         :items="items"
         :items-per-page="100"
+        sort-by="quantity"
+        :sort-desc="true"
         fixed-header
         height="80vh">
       </v-data-table>
@@ -28,6 +33,7 @@
 <script>
 import HistoryManagerApi from "../api/HistoryManager"
 import ItemManager from "../api/ItemManager"
+import UserManager from "../api/UserManager"
 import Utils from "../api/Util"
 
 export default {
@@ -89,6 +95,8 @@ export default {
       let items_dict = {}
       let date_to = new Date(this.date)
       const all_items = this.all_items
+      const users = await UserManager.UserManager.getAllUsers()
+      console.log('users', users)
       date_to.setMonth(this.date.getMonth()+1)
       await HistoryManagerApi.HistoryManager.getUsersMonthHistory(
         null, // user=null: 全員の履歴を取得
@@ -97,6 +105,12 @@ export default {
       ).then(history => {
         history?.forEach(record => {
           if(record.type==="purchase"){
+            const theUser = users[record.user]
+            if (record.user in users && ('debugUser' in theUser) && theUser.debugUser == true) {
+              console.log(" > ignored debug user:", record.user, " ", theUser.name)
+              return
+            }
+
             record.items.forEach(item => {
               const id = ItemManager.getIdFromItem(item)
               if(id in items_dict){

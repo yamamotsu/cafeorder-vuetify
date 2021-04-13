@@ -1,8 +1,7 @@
 <template>
   <v-card>
-    <v-toolbar flat max-height="80vh">
+    <v-toolbar flat max-height="80vh" class="mx-3">
       <v-toolbar-title class="primary--text">{{user.name}}'s history</v-toolbar-title>
-      <v-spacer/>
       <v-btn icon @click="onLeftArrowClicked()">
         <v-icon>mdi-chevron-left</v-icon>
       </v-btn>
@@ -10,10 +9,12 @@
       <v-btn icon @click="onRightArrowClicked()" :disabled="year == now.getFullYear() && month-1 == now.getMonth()">
         <v-icon>mdi-chevron-right</v-icon>
       </v-btn>
+      <v-spacer/>
+      <v-toolbar-title class="primary--text">今月の利用額: {{totalValue}}円</v-toolbar-title>
     </v-toolbar>
 
     <v-progress-linear indeterminate v-show="loading"/>
-    <v-simple-table fixed-header height="80vh">
+    <v-simple-table fixed-header height="80vh" class="mx-3">
       <thead>
         <tr>
           <th class="text-center">Date</th>
@@ -51,6 +52,7 @@ export default {
       date: this.getThisMonth(),
       now: this.getThisMonth(),
       history: [],
+      totalValue: 0,
       items: {},
       loading: false,
     }
@@ -130,7 +132,7 @@ export default {
             })
           })
         }else if(record.type === "set" || record.type === "reset"){
-          console.log("set/reset type", record)
+          // console.log("set/reset type", record)
           itemHistory.push({
             "timestamp": record.timestamp.toDate(),
             "type": record.type,
@@ -142,9 +144,14 @@ export default {
           console.log("invalid type", record)
         }
       })
-      // console.log(itemHistory)
-      // this.itemHistory = itemHistory
       this.history = itemHistory
+      // 合計購入額を計算
+      this.totalValue = this.history.reduce((a, b) => {
+        if(b.type === "purchase"){
+          return a - b.subtotal
+        }
+        return a
+      }, 0)
     }
   },
   filters: {
@@ -169,6 +176,9 @@ export default {
     }
   },
   computed: {
+    // totalValue () {
+    //   return this.history.reduce((a, b) => a.subtotal + b.subtotal, 0)
+    // }
   }
 }
 
