@@ -7,8 +7,8 @@ class AdminAuth {
   }
 
   async loginWithGoogle () {
-    if(config.ignoreAdmin) {
-      console.warn("`config.ignoreAdmin` is set to true. DONT SET THIS FOR PRODUCTION VERSION.")
+    if(config.ignoreAuth) {
+      console.warn("`config.ignoreAuth` is set to true. DONT SET THIS FOR PRODUCTION VERSION.")
       return
     }
     // ログイン済みの場合そのままuserを返す
@@ -32,7 +32,7 @@ class AdminAuth {
   }
 
   async logout () {
-    if(config.ignoreAdmin) return
+    if(config.ignoreAuth) return
     await firebase.auth().signOut()
     this.user = null
     return null
