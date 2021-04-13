@@ -76,7 +76,7 @@
           <v-spacer/>
           <v-chip filter outlined
             :disabled="isEditable"
-            v-for="category in categories" :key="category.id"
+            v-for="category in sortedCategories" :key="category.id"
             :color="category.color"
             :value="category.id">{{category.name}}</v-chip>
         </v-chip-group>
@@ -392,6 +392,9 @@ export default {
         }
         return x.name < y.name ? -1 : +1
       })
+    },
+    sortedCategories() {
+      return Object.values(this.categories).sort((x, y) => x.order - y.order)
     },
     headerText () {
       if(Object.keys(this.user) == 0) return ""

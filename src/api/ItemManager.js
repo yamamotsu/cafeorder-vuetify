@@ -50,6 +50,7 @@ class ItemManagerApi {
       }
     )
     console.log('all categories:', Object.keys(this.categories))
+    return this.categories
   }
 
   async addItem(item) {

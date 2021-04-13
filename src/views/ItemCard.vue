@@ -224,8 +224,8 @@ export default {
   },
   computed: {
     categoriesList() {
-      return Object.values(this.categories).map(value =>
-        {
+      return Object.values(this.categories).sort((a, b) => a.order - b.order).map(
+        value => {
           return {
             text: value.name,
             value: value.id
