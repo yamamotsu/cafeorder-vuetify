@@ -54,6 +54,7 @@ def config_auth():
     except KeyboardInterrupt:
         print("canceled.")
 
+
 def list_auth_users():
     users = auth.list_users()
     users_table = []
@@ -87,7 +88,8 @@ def list_categories():
         if not 'categories' in get_all_collections():
             print('Collection:`categories` is not initialized.')
 
-def init_categories(config:dict):
+
+def update_categories(config:dict):
     '''
         i.e. :
         config = {
@@ -101,10 +103,6 @@ def init_categories(config:dict):
     if config is None:
         raise ValueError("Argument `CONFIG_FILE` is required to init. please run again with `-c [config_file.json]`")
     init_data = config['categories']
-
-    if 'categories' in get_all_collections():
-        print('Collection `cateogries` is already exists.')
-        return
 
     db = firestore.client()
     ref = db.collection('categories')
@@ -136,7 +134,7 @@ def categories_main(sub_command:str, config:dict=None):
     if sub_command == 'list':
         list_categories()
     elif sub_command == 'init':
-        init_categories(config=config)
+        update_categories(config=config)
 
 
 if __name__ == '__main__':
