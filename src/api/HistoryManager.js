@@ -39,14 +39,14 @@ class HistoryManagerApi {
 
   async addSetValueHistory(user, value) {
     const time = this.getTimeStamp()
-    const diff = value - user.balance
     const data = {
       timestamp: time,
       user: user.id,
       type: "set",
-      value: diff
+      value: value
     }
 
+    console.log("> adding set balance history:", data)
     await this.historyCollection.add(data)
   }
 

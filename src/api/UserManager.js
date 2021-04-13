@@ -87,16 +87,18 @@ class UserManagerApi {
   async addUser(user) {
     if (this.exists(user))
     {
-      console.log("ERR: the user is already exists.")
-      console.log("  user: " + user.name)
-      return this.users
+      console.warn("the user is already exists.")
+      console.warn(" > user: " + user.name)
+      return user
     }
-    await this.usersCollection.add(user).then((ref) => {
-      this.users[ref.id] = user
-      this.users[ref.id].id = ref.id
-      this.usersCollection.doc(ref.id).set(this.users[ref.id])
-    })
-    return this.users
+    // create new document on the db and get the reference
+    const newRef = this.usersCollection.doc()
+    const id = newRef.id
+    let newUser = user
+    newUser.id = id
+    await newRef.set(newUser)
+    this.users[id] = newUser
+    return newUser
   }
 
   async overwriteCurrentUser(data) {

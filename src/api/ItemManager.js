@@ -53,13 +53,14 @@ class ItemManagerApi {
   }
 
   async addItem(item) {
-    // this.itemsCollection.doc(item.name).set(item)
-    return await this.itemsCollection.add(item).then((ref) => {
-      this.items[ref.id] = item
-      this.items[ref.id].id = ref.id
-      this.itemsCollection.doc(ref.id).update('id', ref.id)
-      return this.items[ref.id]
-    })
+    // create new document on the db and get the reference
+    const newRef = this.itemsCollection.doc()
+    const id = newRef.id
+    let newItem = item
+    newItem.id = id
+    await newRef.set(newItem)
+    this.items[id] = newItem
+    return newItem
   }
 
   getIdFromItem(item) {
