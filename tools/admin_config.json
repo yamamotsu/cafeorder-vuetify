@@ -1,0 +1,8 @@
+{
+    "categories": [
+        { "name": "お菓子", "order": 0 },
+        { "name": "飲み物", "order": 1 },
+        { "name": "食べ物", "order": 2 },
+        { "name": "その他", "order": 3 }
+    ]
+}
