@@ -1,8 +1,8 @@
 {
     "categories": [
-        { "name": "お菓子", "order": 0, "color": "#FA738C" },
-        { "name": "飲み物", "order": 1, "color": "#84D7FA" },
-        { "name": "食べ物", "order": 2, "color": "#FAB25F" },
-        { "name": "その他", "order": 3, "color": "#757575" }
+        { "id": "snacks", "name": "お菓子", "order": 0, "color": "#FA738C" },
+        { "id": "drinks", "name": "飲み物", "order": 1, "color": "#84D7FA" },
+        { "id": "foods", "name": "食べ物", "order": 2, "color": "#FAB25F" },
+        { "id": "other", "name": "その他", "order": 3, "color": "#757575" }
     ]
 }

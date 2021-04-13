@@ -92,8 +92,8 @@ def init_categories(config:dict):
         i.e. :
         config = {
             "categories": [
-                { "name": "Snacks", "order": 0, "color": "#FA738C" },
-                { "name": "Drinks", "order": 1, "color": "#84D7FA" },
+                { "id": "snacks", "name": "お菓子", "order": 0, "color": "#FA738C" },
+                { "id": "drinks", "name": "飲み物", "order": 1, "color": "#84D7FA" },
                 ...
             ]
         }
@@ -110,7 +110,11 @@ def init_categories(config:dict):
     ref = db.collection('categories')
     print('registering categories..')
     for category in init_data:
-        doc = ref.document()
+        if "id" in category:
+            doc = ref.document(category["id"])
+        else:
+            doc = ref.document()
+
         data = {
             "name": category["name"],
             "order": category["order"],
