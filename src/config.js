@@ -1,19 +1,19 @@
 export default {
     ignoreAuth: false, // For Demo only
-    appTitle: "CafeOrder Demo", // "LIMU 喫茶注文システム",
+    appTitle: "LIMU 喫茶注文システム", // "CafeOrder Demo",
     colorTheme: {
-        primary: '#093a8b', //'#CF3A41',
-        secondary: '#a8ccec', //'#FFCDD2',
-        accent: '#000000' //'#19978C'
+        primary: '#CF3A41',//'#093a8b',
+        secondary: '#FFCDD2',//'#a8ccec',
+        accent: '#19978C'//'#000000'
     },
     emulators: { // firebase emulators for local debug
         firestore: {
-            use: false,
+            use: true,
             host: "localhost",
             port: 8080
         },
         auth: {
-            use: false,
+            use: true,
             host: "localhost",
             port: 9099
         }
