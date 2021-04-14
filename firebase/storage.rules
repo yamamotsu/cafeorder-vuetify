@@ -1,8 +1,14 @@
 service firebase.storage {
   match /b/{bucket}/o {
     match /{allPaths=**} {
-      allow read, write: if
-        (request.auth.uid == "6x0gwYxWTUdYtUCOkqFbpGWFYfJ3" || request.auth.uid == "nw8LF3x0WeNY9lyf0OhSrvD1XDk2");
+    	function isVerified() {
+      	return request.auth.token.verified;
+      }
+      function isAdmin() {
+      	return request.auth.token.admin;
+      }
+      allow read: if isVerified();
+      allow write: if isAdmin();
     }
   }
 }
