@@ -41,7 +41,7 @@
     <div class="main-content mt-12">
       <!-- Favorite Items -->
       <div class="favorites-content section"
-        v-if="favItems.length > 0">
+        v-if="favItems != undefined && favItems.length > 0 && items != undefined">
         <div class="favorites-title section-title">
           <h3>Quickpicker</h3>
         </div>
@@ -50,15 +50,17 @@
             <v-col
               cols="6" sm="3" md="3" lg="2"
               class="pa-2"
-              v-for="card in favItems"
-              v-show="card.enable || isEditable"
-              :key="card.id">
+              v-for="itemId in favItems"
+              v-show="items[itemId].enable || isEditable"
+              :key="itemId.id">
                 <item-card
-                  :item="card"
+                  :item="items[itemId]"
                   :user="user"
                   :isEditable="isEditable"
+                  :isFavorite="user.favorites != undefined && user.favorites[itemId]"
                   :categories="categories"
                   @click="(item) => addItemToCart(item)"
+                  @setFavorite="(itemId, value) => setFavItem(itemId, value)"
                   @switched="(enable) => setEnableItem(card, enable)"
                 />
             </v-col>
@@ -92,8 +94,10 @@
                 :item="card"
                 :user="user"
                 :isEditable="isEditable"
+                :isFavorite="user.favorites != undefined && user.favorites[card.id]"
                 :categories="categories"
                 @click="(item) => addItemToCart(item)"
+                @setFavorite="(itemId, value) => setFavItem(itemId, value)"
                 @switched="(enable) => setEnableItem(card, enable)"
               />
             </v-col>
@@ -114,7 +118,7 @@
       </cart>
 
       <!-- Purchase Completed overlay -->
-      <v-overlay :value="isPurchaseCompleted">
+      <v-overlay :value="isPurchaseCompleted" v-if="isPurchaseCompleted">
         <v-card color="white" class="pa-1 text-center" width="300">
           <v-card-text class="primary--text text-h4 pb-0">支払い完了!</v-card-text>
           <v-card-subtitle class="grey--text light-2 pt-0">{{ getNowString() }}  {{ user.name }}</v-card-subtitle>
@@ -167,7 +171,6 @@ import Vue from "vue"
 import ItemManager from "../api/ItemManager"
 import UserManagerApi from "../api/UserManager"
 import HistoryManagerApi from "../api/HistoryManager"
-// import AdminAuth from "@/api/AdminAuth"
 import CartWindow from "./CartWindow"
 import ItemCard from "./ItemCard"
 Vue.component("cart", CartWindow)
@@ -177,9 +180,9 @@ export default {
   name: "ItemSelectPage",
   data () {
     return {
-      items: {},
+      items: undefined,
       favItems: [],
-      user: {},
+      user: undefined,
       loading: false,
       isAdminMode: false,
       isCartEnabled: false,
@@ -216,9 +219,8 @@ export default {
     console.log("current user:", this.user)
     await this.getAllItems()
     console.log('all items:', this.items)
-    const favItems = await UserManagerApi.UserManager.fetchFavoriteItems(this.user, this.items)
-    console.log("favItems:", favItems)
-    this.favItems = favItems
+    console.log("fav items:", this.favItems)
+    this.reloadFavItems()
     this.loading = false
   },
   filters: {
@@ -380,12 +382,26 @@ export default {
       }
       return "-¥" + -1*amount
     },
+    async setFavItem(itemId, value) {
+      console.log("setting favitem id:", itemId, " to value:", value)
+      this.user = await UserManagerApi.UserManager.setFavItem(itemId, value)
+      this.reloadFavItems()
+    },
+    reloadFavItems () {
+      if(this.user == undefined) return undefined
+      if(this.user.favorites == undefined) {
+        console.log('favitems not found')
+        return undefined
+      }
+      this.favItems = Object.keys(this.user.favorites).filter(val => this.user.favorites[val] == true)
+    }
   },
   computed: {
     cartTotalValue () {
       return this.getCartTotalValue()
     },
     sortedItems () {
+      if (this.items == undefined) return undefined
       return  Object.values(this.items).sort((x, y) => {
         if (x.enable != y.enable) {
           return x.enable ? -1 : +1
@@ -397,9 +413,10 @@ export default {
       return Object.values(this.categories).sort((x, y) => x.order - y.order)
     },
     headerText () {
+      if(this.user == undefined) return "loading.."
       if(Object.keys(this.user) == 0) return ""
       return this.user.name + ": " + this.amountDisplay(this.user.balance)
-    }
+    },
   }
 }
 

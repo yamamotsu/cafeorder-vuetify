@@ -13,7 +13,7 @@
         class="mx-0 my-0"
         @change="state => $emit('switched', state)"
         v-model="item.enable"/>
-      <v-spacer></v-spacer>
+      <v-spacer/>
       <v-btn icon
         color="primary" class="ml-1"
         @click="isEditMode=!isEditMode">
@@ -21,13 +21,12 @@
       </v-btn>
     </v-card-actions>
 
-    <v-img height="200" :src="isEditMode ? newItem.imageUrl : item.imageUrl">
+    <v-img height="160" :src="isEditMode ? newItem.imageUrl : item.imageUrl">
       <template v-slot:placeholder>
         <v-row
           class="fill-height ma-0"
           align="center"
-          justify="center"
-        >
+          justify="center">
           <v-progress-circular
             indeterminate
             color="grey lighten-1"
@@ -39,6 +38,15 @@
           <v-icon x-large>mdi-camera</v-icon>
         </v-overlay>
       </div>
+
+      <!-- <v-system-bar height="32" color="transparent" class="px-0">
+        <v-spacer/>
+        <v-btn icon tile :style="{backgroundColor: '#FEFEFE80'}"
+          @click="isFavorite = !isFavorite">
+          <v-icon color="gray" v-show="!isFavorite">mdi-star</v-icon>
+          <v-icon color="primary" v-show="isFavorite">mdi-star</v-icon>
+        </v-btn>
+      </v-system-bar> -->
     </v-img>
 
     <!-- Item Summary -->
@@ -47,7 +55,14 @@
         <v-chip small outlined :ripple="false"
           v-if="category!=undefined"
           :color="category.color">{{ category.name }}</v-chip>
+        <v-spacer/>
+        <v-btn small icon class="py-1 px-1" tile
+          @click.stop="onClickFavoriteIcon()">
+          <v-icon color="gray" v-show="!isFavorite">mdi-star</v-icon>
+          <v-icon color="primary" v-show="isFavorite">mdi-star</v-icon>
+        </v-btn>
       </v-chip-group>
+
       <v-card-title class="grey--text text-h5 px-3 pt-0 pb-0">{{ item.name }}</v-card-title>
       <v-card-text class="primary--text text-h5 px-3 pb-3 pt-3">
         <div class="amount-display">
@@ -148,7 +163,7 @@ export default {
       ],
     }
   },
-  props: ["item", "user", "isEditable", "isPrefab", "categories"],
+  props: ["item", "user", "isEditable", "isPrefab", "categories", "isFavorite"],
   mounted () {
     this.newItem = Object.assign({}, this.item)
     if(this.isPrefab) {
@@ -213,6 +228,9 @@ export default {
       this.loading = false
       this.thumbnailImage = file
     },
+    onClickFavoriteIcon() {
+      this.$emit('setFavorite', this.item.id, !this.isFavorite)
+    },
     selectImageFile() {
       this.$refs.input.click()
     },
@@ -235,7 +253,7 @@ export default {
     },
     category() {
       return this.categories[this.item.category]
-    }
+    },
   }
 }
 

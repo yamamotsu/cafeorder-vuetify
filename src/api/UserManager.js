@@ -131,6 +131,15 @@ class UserManagerApi {
     return this.users
   }
 
+  async setFavItem(itemId, value){
+    if (this.currentUser.favorites == undefined) {
+      this.currentUser.favorites = {}
+    }
+    this.currentUser.favorites[itemId] = value
+    await this.usersCollection.doc(this.currentUser.id).update(this.currentUser)
+    return this.currentUser
+  }
+
   async fetchFavoriteItems(user, all_items, n_purchased=5) {
     let now = new Date(Date.now())
     let tommorow = new Date(now).setDate(now.getDate()+1)
