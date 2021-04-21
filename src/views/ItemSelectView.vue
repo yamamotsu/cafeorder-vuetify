@@ -383,7 +383,7 @@ export default {
       return "-¥" + -1*amount
     },
     async setFavItem(itemId, value) {
-      console.log("setting favitem id:", itemId, " to value:", value)
+      // console.log("setting favitem id:", itemId, " to value:", value)
       this.user = await UserManagerApi.UserManager.setFavItem(itemId, value)
       this.reloadFavItems()
     },

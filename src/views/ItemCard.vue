@@ -58,8 +58,8 @@
         <v-spacer/>
         <v-btn small icon class="py-1 px-1" tile
           @click.stop="onClickFavoriteIcon()">
-          <v-icon color="gray" v-show="!isFavorite">mdi-star</v-icon>
-          <v-icon color="primary" v-show="isFavorite">mdi-star</v-icon>
+          <v-icon color="accent" v-show="!isFavorite">mdi-star-outline</v-icon>
+          <v-icon color="accent" v-show="isFavorite">mdi-star</v-icon>
         </v-btn>
       </v-chip-group>
 
