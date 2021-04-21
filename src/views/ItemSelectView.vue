@@ -61,7 +61,7 @@
                   :categories="categories"
                   @click="(item) => addItemToCart(item)"
                   @setFavorite="(itemId, value) => setFavItem(itemId, value)"
-                  @switched="(enable) => setEnableItem(card, enable)"
+                  @switched="(enable) => setEnableItem(items[itemId], enable)"
                 />
             </v-col>
           </v-row>

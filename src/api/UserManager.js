@@ -1,6 +1,4 @@
 import firebase from '../firebase'
-import HistoryManagerApi from './HistoryManager'
-import ItemManager from './ItemManager'
 import AdminAuth from './AdminAuth'
 
 class UserManagerApi {
@@ -138,81 +136,6 @@ class UserManagerApi {
     this.currentUser.favorites[itemId] = value
     await this.usersCollection.doc(this.currentUser.id).update(this.currentUser)
     return this.currentUser
-  }
-
-  async fetchFavoriteItems(user, all_items, n_purchased=5) {
-    let now = new Date(Date.now())
-    let tommorow = new Date(now).setDate(now.getDate()+1)
-    if(user.id in this.userFavItems){
-      if(this.userFavItems[user.id].timestamp < tommorow){
-        console.log("favitems already exists on local")
-        return this.userFavItems[user.id].value
-      }else{
-        console.log("old favitems found on local. fetching from db..")
-      }
-    }else{
-      console.log("favitems not found on local")
-    }
-
-    let date_now = new Date(now.getFullYear(), now.getMonth())
-    let date_from = new Date(date_now)
-    let date_to = new Date(date_now)
-    // 3ヶ月前から今月まで
-    date_from.setMonth(date_now.getMonth()-2)
-    date_to.setMonth(date_now.getMonth()+1)
-
-    let self = this
-    let items_dict = {}
-    let favitems_dict = {}
-    return await HistoryManagerApi.HistoryManager.getUsersMonthHistory(
-      user,
-      date_from,
-      date_to
-    ).then(history => {
-      if (!history){
-        return []
-      }
-      history.forEach(record => {
-        if(record.type==="purchase"){
-          record.items.forEach(item => {
-            const id = ItemManager.getIdFromItem(item)
-            if(id != -1){
-              if(id in items_dict){
-                items_dict[id].quantity += item.quantity
-              }else{
-                items_dict[id] = item
-              }
-            }else{
-              console.error("item:", item.name, "'s record is no longer available.")
-            }
-          })
-        }else{
-          // console.log("record type is not purchase")
-        }
-      })
-      console.log("items_dict:", items_dict)
-      // all_itemsのうちよく購入されているものをfavitems_dictに登録
-      Object.keys(items_dict).forEach(id => {
-        if(items_dict[id].quantity < n_purchased){
-          return
-        }
-        favitems_dict[id] = all_items[id]
-      })
-      console.log("favitems_dict:", favitems_dict)
-      // favitems_dictをリスト化・購入数の降順で並べ替え
-      let favitems_list = Object.values(favitems_dict).sort(function(a,b){
-        if(a.quantity > b.quantity) return -1
-        if(a.quantity < b.quantity) return 1
-        return 0
-      })
-      favitems_list = favitems_list.slice(0, 5)
-      self.userFavItems[user.id] = {
-        "user": user.id,
-        "value": favitems_list,
-        "timestamp": new Date(Date.now())
-      }
-      return favitems_list
-    })
   }
 }
 
